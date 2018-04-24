@@ -5,16 +5,16 @@
 * Provide a ready-to-use web application that
   * hosts the oxygen webauthor
   * implements the webauthor integration REST API
-  
-  ## TODO
+ 
+## TODO
  * separate argon-restxq.xqm into an oXygen specific layer and a more general rest layer
  * provide sample basex instance with the project
- * align Java classes (de-duplicate code) with [desktop plugin](https://github.com/axxepta/project-argon), e.g. LockHandler, StreamHandler etc.
  * setup build server and tests
+  
+## oXygen SDK specific notes
 
-
-- webapp: A BaseX RestXQ webapp component (folder **webapp**, to be deployed along with a BaseX instance)
-
+see [Notes](https://github.com/axxepta/argon-server/wiki/Notes)
+ 
 
 ### BaseX Webapp
 The BaseX webapp mainly consists of a collection of RestXQ endpoints which serve the oXygen plugin
