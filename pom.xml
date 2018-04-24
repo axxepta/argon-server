@@ -8,7 +8,8 @@
   <artifactId>argon-server</artifactId>
   <version>0.1-SNAPSHOT</version>
   <name>argon server</name>
-  <packaging>jar</packaging>
+ <!-- <packaging>jar</packaging>-->
+  <packaging>war</packaging>
 
   <properties>
     
@@ -22,6 +23,8 @@
     <baseXVersion>9.0</baseXVersion>
     <saxonVersion>9.6.0-6</saxonVersion>
     <metrics.version>3.2.3</metrics.version>
+    
+    <oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
   </properties>
 
   <licenses>
@@ -31,24 +34,67 @@
   </licenses>
 
   <repositories>
+    
     <repository>
-      <id>basex</id>
-      <name>BaseX Maven Repository</name>
-      <url>http://files.basex.org/maven</url>
+      <id>oxygenxml</id>
+      <name>oXygen XML</name>
+      <url>http://oxygenxml.com/maven</url>
     </repository>
+    
     <repository>
       <id>central</id>
       <name>Central Maven Repository</name>
       <url>http://repo2.maven.org/maven2/</url>
     </repository>
+
+    <repository>
+      <id>basex</id>
+      <name>BaseX Maven Repository</name>
+      <url>http://files.basex.org/maven</url>
+    </repository>
+ 
   </repositories>
 
   <organization>
     <name>axxepta GmbH</name>
     <url>https://axxepta.de</url>
   </organization>
+  
 
   <dependencies>
+    
+<!--    <dependency>
+      <groupId>com.oxygenxml</groupId>
+      <artifactId>oxygen-sdk</artifactId>
+      <version>${oxygen.sdk.version}</version>
+    </dependency>-->
+    
+    <dependency>
+      <groupId>com.oxygenxml</groupId>
+      <artifactId>oxygen-webapp</artifactId>
+      <version>${oxygen.sdk.version}</version>
+      <type>war</type>
+      <exclusions>
+        <exclusion>
+          <groupId>com.oxygenxml</groupId>
+          <artifactId>frameworks</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.oxygenxml</groupId>
+      <artifactId>oxygen-webapp</artifactId>
+      <version>${oxygen.sdk.version}</version>
+      <classifier>classes</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>com.oxygenxml</groupId>
+          <artifactId>frameworks</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
     <dependency>
       <groupId>org.basex</groupId>
       <artifactId>basex</artifactId>
@@ -139,6 +185,103 @@
     
     
   </dependencies>
+  
+  <build>
+    <!--  TODO: These should be parametrized. -->
+    <finalName>oxygen-sdk-sample-webapp</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>${jettyVersion}</version>
+        <configuration>
+   <!--       <jettyXml>${basedir}/jetty.xml</jettyXml>
+          <webAppSourceDirectory>${basedir}</webAppSourceDirectory>-->
+          <connectors>
+            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+              <!-- Choose HTTP port -->
+              <port>8001</port>
+              <!-- 8001 vs 8088 -->
+              <maxIdleTime>60000</maxIdleTime>
+            </connector>
+          </connectors>
+          <!-- Key and port for stopping Jetty -->
+          <stopKey>keyToStopJetty</stopKey>
+          <stopPort>8985</stopPort>
+          <!-- 8985  vs 8986-->
+          
+          <!-- TODO: why is this setting ignored?
+                     temporarily moved to default folder /src/main/resources/log4j.xml
+                     <systemProperties>
+                      <systemProperty>
+                        <name>log4j.configuration</name>
+                        <value>${basedir}/WEB-INF/log4j.xml</value>
+                      </systemProperty>
+                    </systemProperties> -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
+          <overlays>
+            <!-- Add the contents of the oxygen-webapp. -->
+            <overlay>
+              <groupId>com.oxygenxml</groupId>
+              <artifactId>oxygen-webapp</artifactId>
+              <excludes>
+                <exclude>WEB-INF/classes/ro/sync</exclude>
+                <exclude>WEB-INF/frameworks.zip</exclude>
+                <exclude>WEB-INF/options.zip</exclude>
+                <exclude>WEB-INF/plugins.zip</exclude>
+                <exclude>WEB-INF/lib/</exclude>
+              </excludes>
+            </overlay>
+            
+           <!-- <!-\- Add the frameworks directories. -\->
+            <overlay>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>bundle-frameworks</artifactId>
+              <type>jar</type>
+              <targetPath>WEB-INF/</targetPath>
+            </overlay>
+            
+            <!-\- Add the options directories. -\->
+            <overlay>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>bundle-options</artifactId>
+              <type>jar</type>
+              <targetPath>WEB-INF/</targetPath>
+            </overlay>
+            
+            <!-\- Add the plugins. -\->
+            <overlay>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>bundle-plugins</artifactId>
+              <type>jar</type>
+              <targetPath>WEB-INF/</targetPath>
+            </overlay>
+            
+            <!-\- Add the samples directory. -\->
+            <overlay>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>bundle-samplefiles</artifactId>
+              <type>jar</type>
+              <targetPath>samples/</targetPath>
+              <includes>
+                <include>dita/**</include>
+              </includes>
+              <excludes>
+                <exclude>META-INF/**</exclude>
+              </excludes>
+            </overlay>-->
+          </overlays>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
 
@@ -169,6 +312,7 @@
               </systemProperties>-->
             </configuration>
           </plugin>
+          
         </plugins>
       </build>
     </profile>
@@ -237,4 +381,12 @@
       </build>
     </profile>
   </profiles>
+  
+  <modules>
+    <!-- <module>bundle-frameworks</module>
+    <module>bundle-options</module>
+    <module>bundle-samplefiles</module>
+    <module>bundle-plugins</module> -->
+
+  </modules>
 </project>
