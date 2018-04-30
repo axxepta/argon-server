@@ -1,399 +1,340 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>de.axxepta</groupId>
-  <artifactId>argon-server</artifactId>
-  <version>0.1-SNAPSHOT</version>
-  <name>argon server</name>
- <!-- <packaging>jar</packaging>-->
-  <packaging>war</packaging>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <properties>
-    
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <compileSource>1.8</compileSource>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    
-    <jettyVersion>9.4.9.v20180320</jettyVersion>
-    <baseXVersion>9.0</baseXVersion>
-    <saxonVersion>9.6.0-6</saxonVersion>
-    <metrics.version>3.2.3</metrics.version>
-    
-    <oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
-  </properties>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.axxepta</groupId>
+	<artifactId>argon-server</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<name>argon server</name>
+	<!-- <packaging>jar</packaging> -->
+	<packaging>war</packaging>
 
-  <licenses>
-    <license>
-      <name>MIT</name>
-    </license>
-  </licenses>
+	<properties>
 
-  <repositories>
-    
-    <repository>
-      <id>oxygenxml</id>
-      <name>oXygen XML</name>
-      <url>http://oxygenxml.com/maven</url>
-    </repository>
-    
-    <repository>
-      <id>central</id>
-      <name>Central Maven Repository</name>
-      <url>http://repo2.maven.org/maven2/</url>
-    </repository>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<compileSource>1.8</compileSource>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <repository>
-      <id>basex</id>
-      <name>BaseX Maven Repository</name>
-      <url>http://files.basex.org/maven</url>
-    </repository>
- 
-  </repositories>
+		<jettyVersion>9.4.9.v20180320</jettyVersion>
+		<baseXVersion>9.0</baseXVersion>
+		<saxonVersion>9.6.0-6</saxonVersion>
+		<metrics.version>3.2.3</metrics.version>
 
-  <organization>
-    <name>axxepta GmbH</name>
-    <url>https://axxepta.de</url>
-  </organization>
-  
+		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
+	</properties>
 
-  <dependencies>
-    
-<!--    <dependency>
-      <groupId>com.oxygenxml</groupId>
-      <artifactId>oxygen-sdk</artifactId>
-      <version>${oxygen.sdk.version}</version>
-    </dependency>-->
-    
-    
-    <dependency>
-      <groupId>com.oxygenxml</groupId>
-      <artifactId>oxygen-webapp</artifactId>
-      <version>${oxygen.sdk.version}</version>
-      <type>war</type>
-      <exclusions>
-        <exclusion>
-          <groupId>com.oxygenxml</groupId>
-          <artifactId>frameworks</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    
-    
-    <dependency>
-      <groupId>com.oxygenxml</groupId>
-      <artifactId>oxygen-webapp</artifactId>
-      <version>${oxygen.sdk.version}</version>
-      <classifier>classes</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>com.oxygenxml</groupId>
-          <artifactId>frameworks</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-   
-    
-    <dependency>
-      <groupId>org.basex</groupId>
-      <artifactId>basex</artifactId>
-      <version>${baseXVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.basex</groupId>
-      <artifactId>basex-api</artifactId>
-      <version>${baseXVersion}</version>
-    </dependency>
-    
-    <!--
-    <dependency>
-      <groupId>net.sf.saxon</groupId>
-      <artifactId>Saxon-HE</artifactId>
-      <version>${saxonVersion}</version>
-    </dependency>
-    -->
-    
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jettyVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jettyVersion}</version>
-    </dependency>
+	<licenses>
+		<license>
+			<name>MIT</name>
+		</license>
+	</licenses>
 
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jettyVersion}</version>
-    </dependency>
-    <!--     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-plus</artifactId>
-      <version>${project.version}</version>
-</dependency>
-    -->
-    <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
-      <version>4.6.1.201703071140-r</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.3</version>
-    </dependency>
-    
-    
-    <dependency>
-      <groupId>com.sparkjava</groupId>
-      <artifactId>spark-core</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>com.j2html</groupId>
-      <artifactId>j2html</artifactId>
-      <version>1.2.0</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20160810</version>
-    </dependency>
-    <!--
+	<repositories>
+		<!-- <repository> <id>oxygenxml</id> <name>oXygen XML</name> <url>http://oxygenxml.com/maven</url> 
+			</repository> -->
 
-    <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-core</artifactId>
-      <version>${metrics.version}</version>
-    </dependency>
-    
-    
-    <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-servlet</artifactId>
-      <version>${metrics.version}</version>
-    </dependency>
-  
-    <dependency>
-      <groupId>de.axxepta</groupId>
-      <artifactId>converterservices</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    -->
-    
-    
-  </dependencies>
-  
-  <build>
-    <!--  TODO: These should be parametrized. -->
-    <finalName>oxygen-sdk-sample-webapp</finalName>
-    <plugins>
-      <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>${jettyVersion}</version>
-        <configuration>
-   <!--       <jettyXml>${basedir}/jetty.xml</jettyXml>
-          <webAppSourceDirectory>${basedir}</webAppSourceDirectory>-->
-          <connectors>
-            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-              <!-- Choose HTTP port -->
-              <port>8001</port>
-              <!-- 8001 vs 8088 -->
-              <maxIdleTime>60000</maxIdleTime>
-            </connector>
-          </connectors>
-          <!-- Key and port for stopping Jetty -->
-          <stopKey>keyToStopJetty</stopKey>
-          <stopPort>8985</stopPort>
-          <!-- 8985  vs 8986-->
-          
-          <!-- TODO: why is this setting ignored?
-                     temporarily moved to default folder /src/main/resources/log4j.xml
-                     <systemProperties>
-                      <systemProperty>
-                        <name>log4j.configuration</name>
-                        <value>${basedir}/WEB-INF/log4j.xml</value>
-                      </systemProperty>
-                    </systemProperties> -->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
-          <overlays>
-            <!-- Add the contents of the oxygen-webapp. -->
-            <overlay>
-              <groupId>com.oxygenxml</groupId>
-              <artifactId>oxygen-webapp</artifactId>
-              <excludes>
-                <exclude>WEB-INF/classes/ro/sync</exclude>
-                <exclude>WEB-INF/frameworks.zip</exclude>
-                <exclude>WEB-INF/options.zip</exclude>
-                <exclude>WEB-INF/plugins.zip</exclude>
-                <exclude>WEB-INF/lib/</exclude>
-              </excludes>
-            </overlay>
-            
-           <!-- <!-\- Add the frameworks directories. -\->
-            <overlay>
-              <groupId>${project.parent.groupId}</groupId>
-              <artifactId>bundle-frameworks</artifactId>
-              <type>jar</type>
-              <targetPath>WEB-INF/</targetPath>
-            </overlay>
-            
-            <!-\- Add the options directories. -\->
-            <overlay>
-              <groupId>${project.parent.groupId}</groupId>
-              <artifactId>bundle-options</artifactId>
-              <type>jar</type>
-              <targetPath>WEB-INF/</targetPath>
-            </overlay>
-            
-            <!-\- Add the plugins. -\->
-            <overlay>
-              <groupId>${project.parent.groupId}</groupId>
-              <artifactId>bundle-plugins</artifactId>
-              <type>jar</type>
-              <targetPath>WEB-INF/</targetPath>
-            </overlay>
-            
-            <!-\- Add the samples directory. -\->
-            <overlay>
-              <groupId>${project.parent.groupId}</groupId>
-              <artifactId>bundle-samplefiles</artifactId>
-              <type>jar</type>
-              <targetPath>samples/</targetPath>
-              <includes>
-                <include>dita/**</include>
-              </includes>
-              <excludes>
-                <exclude>META-INF/**</exclude>
-              </excludes>
-            </overlay>-->
-          </overlays>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+		<repository>
+			<id>oxygenxml</id>
+			<name>oXygen public artifacts</name>
+			<url>http://www.oxygenxml.com/maven</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>Central Maven Repository</name>
+			<url>http://repo2.maven.org/maven2/</url>
+		</repository>
 
-  <profiles>
+		<repository>
+			<id>basex</id>
+			<name>BaseX Maven Repository</name>
+			<url>http://files.basex.org/maven</url>
+		</repository>
 
-    <profile>
-      <id>start</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
-            <configuration>
-              <mainClass>org.basex.BaseXHTTP</mainClass>
-              <arguments>
-                <argument>-h8984</argument>
-                <argument>-s9895</argument>
-                <argument>-p1984</argument>
-                <!--
-                <argument>-Urestxq</argument>
-                <argument>-Prestxq</argument>
-                -->
-              </arguments>
-           <!--   <systemProperties>
-                <systemProperty>
-                  <key>exiftool-exe</key>
-                  <value>${exiftool-exe}</value>
-                </systemProperty>
-              </systemProperties>-->
-            </configuration>
-          </plugin>
-          
-        </plugins>
-      </build>
-    </profile>
-    
-    <profile>
-      <id>stop</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
-            <configuration>
-              <mainClass>org.basex.BaseXHTTP</mainClass>
-              <arguments>
-                <argument>-h8984</argument>
-                <argument>-s9895</argument>
-                <argument>-p9897</argument>
-                <argument>stop</argument>
-              </arguments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+	</repositories>
 
-    <profile>
-      <id>init-empty</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
-            <configuration>
-              <mainClass>org.basex.BaseX</mainClass>
-              <arguments>
-                <argument>-v</argument>
-                <argument>init-empty.bxs</argument>
-              </arguments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-   
+	<organization>
+		<name>axxepta GmbH</name>
+		<url>https://axxepta.de</url>
+	</organization>
 
-  
-  
-    <profile>
-      <id>gui</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
-            <configuration>
-              <mainClass>org.basex.BaseXGUI</mainClass>
-              <arguments>
-                <argument>ignore</argument>
-              </arguments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-  
-  <modules>
-    <!-- <module>bundle-frameworks</module>
-    <module>bundle-options</module>
-    <module>bundle-samplefiles</module>
-    <module>bundle-plugins</module> -->
 
-  </modules>
+	<dependencies>
+
+		<!-- <dependency> <groupId>com.oxygenxml</groupId> <artifactId>oxygen-sdk</artifactId> 
+			<version>${oxygen.sdk.version}</version> </dependency> -->
+
+
+		<dependency>
+			<groupId>com.oxygenxml</groupId>
+			<artifactId>oxygen-webapp</artifactId>
+			<version>${oxygen.sdk.version}</version>
+			<type>war</type>
+			<exclusions>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>frameworks</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.oxygenxml</groupId>
+			<artifactId>oxygen-webapp</artifactId>
+			<version>${oxygen.sdk.version}</version>
+			<classifier>classes</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>frameworks</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.basex</groupId>
+			<artifactId>basex</artifactId>
+			<version>${baseXVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.basex</groupId>
+			<artifactId>basex-api</artifactId>
+			<version>${baseXVersion}</version>
+		</dependency>
+
+		<!-- <dependency> <groupId>net.sf.saxon</groupId> <artifactId>Saxon-HE</artifactId> 
+			<version>${saxonVersion}</version> </dependency> -->
+
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>${jettyVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>${jettyVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>${jettyVersion}</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-plus</artifactId> 
+			<version>${project.version}</version> </dependency> -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>4.6.1.201703071140-r</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.3</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.sparkjava</groupId>
+			<artifactId>spark-core</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.j2html</groupId>
+			<artifactId>j2html</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
+		</dependency>
+		<!-- <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-core</artifactId> 
+			<version>${metrics.version}</version> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
+			<artifactId>metrics-servlet</artifactId> <version>${metrics.version}</version> 
+			</dependency> <dependency> <groupId>de.axxepta</groupId> <artifactId>converterservices</artifactId> 
+			<version>1.0-SNAPSHOT</version> </dependency> -->
+
+
+	</dependencies>
+
+	<build>
+		<!-- TODO: These should be parametrized. -->
+		<finalName>oxygen-sdk-sample-webapp</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jettyVersion}</version>
+				<configuration>
+
+					<webApp>
+						<contextPath>/${project.artifactId}</contextPath>
+						<baseResource
+							implementation="org.eclipse.jetty.util.resource.ResourceCollection">
+							<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
+						</baseResource>
+						<descriptor>/${project.artifactId}/WEB-INF/web.xml</descriptor>
+					</webApp>
+					<!-- <jettyXml>${basedir}/jetty.xml</jettyXml> <webAppSourceDirectory>${basedir}</webAppSourceDirectory> -->
+					<connectors>
+						<connector
+							implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							<!-- Choose HTTP port -->
+							<port>8001</port>
+							<!-- 8001 vs 8088 -->
+							<maxIdleTime>60000</maxIdleTime>
+						</connector>
+					</connectors>
+					<!-- Key and port for stopping Jetty -->
+					<stopKey>keyToStopJetty</stopKey>
+					<stopPort>8985</stopPort>
+					<!-- 8985 vs 8986 -->
+
+					<!-- TODO: why is this setting ignored? temporarily moved to default 
+						folder /src/main/resources/log4j.xml <systemProperties> <systemProperty> 
+						<name>log4j.configuration</name> <value>${basedir}/WEB-INF/log4j.xml</value> 
+						</systemProperty> </systemProperties> -->
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
+					<overlays>
+						<!-- Add the contents of the oxygen-webapp. -->
+						<overlay>
+							<groupId>com.oxygenxml</groupId>
+							<artifactId>oxygen-webapp</artifactId>
+							<excludes>
+								<exclude>WEB-INF/classes/ro/sync</exclude>
+								<exclude>WEB-INF/frameworks.zip</exclude>
+								<exclude>WEB-INF/options.zip</exclude>
+								<exclude>WEB-INF/plugins.zip</exclude>
+								<exclude>WEB-INF/lib/</exclude>
+							</excludes>
+						</overlay>
+
+						<!-- <!-\- Add the frameworks directories. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
+							<artifactId>bundle-frameworks</artifactId> <type>jar</type> <targetPath>WEB-INF/</targetPath> 
+							</overlay> <!-\- Add the options directories. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
+							<artifactId>bundle-options</artifactId> <type>jar</type> <targetPath>WEB-INF/</targetPath> 
+							</overlay> <!-\- Add the plugins. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
+							<artifactId>bundle-plugins</artifactId> <type>jar</type> <targetPath>WEB-INF/</targetPath> 
+							</overlay> <!-\- Add the samples directory. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
+							<artifactId>bundle-samplefiles</artifactId> <type>jar</type> <targetPath>samples/</targetPath> 
+							<includes> <include>dita/**</include> </includes> <excludes> <exclude>META-INF/**</exclude> 
+							</excludes> </overlay> -->
+					</overlays>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+
+		<profile>
+			<id>start</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<mainClass>org.basex.BaseXHTTP</mainClass>
+							<arguments>
+								<argument>-h8984</argument>
+								<argument>-s9895</argument>
+								<argument>-p1984</argument>
+								<!-- <argument>-Urestxq</argument> <argument>-Prestxq</argument> -->
+							</arguments>
+							<!-- <systemProperties> <systemProperty> <key>exiftool-exe</key> <value>${exiftool-exe}</value> 
+								</systemProperty> </systemProperties> -->
+						</configuration>
+					</plugin>
+
+
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>stop</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<mainClass>org.basex.BaseXHTTP</mainClass>
+							<arguments>
+								<argument>-h8984</argument>
+								<argument>-s9895</argument>
+								<argument>-p9897</argument>
+								<argument>stop</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>init-empty</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<mainClass>org.basex.BaseX</mainClass>
+							<arguments>
+								<argument>-v</argument>
+								<argument>init-empty.bxs</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>gui</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<mainClass>org.basex.BaseXGUI</mainClass>
+							<arguments>
+								<argument>ignore</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<modules>
+		<!-- <module>bundle-frameworks</module> <module>bundle-options</module> 
+			<module>bundle-samplefiles</module> <module>bundle-plugins</module> -->
+
+	</modules>
 </project>
