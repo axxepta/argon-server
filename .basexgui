@@ -1,0 +1,92 @@
+# Paths
+INPUTPATH = 
+DATAPATH = 
+WORKPATH = 
+PROJECTPATH = 
+EDITOR = 1
+EDITOR1 = 
+INPUTS = 0
+OPEN = 0
+
+# Layout
+FONT = SansSerif
+MONOFONT = Consolas
+FONTTYPE = 0
+FONTSIZE = 13
+ONLYMONO = false
+COLORRED = 15
+COLORGREEN = 11
+COLORBLUE = 6
+
+# Windows
+UPDATEVERSION = 8.6
+VIEWS = H V editor text - V H folder map plot - H info table tree explore - - - 
+GUISIZE0 = 1202
+GUISIZE1 = 680
+GUILOC0 = 48
+GUILOC1 = 15
+MAXSTATE = false
+SHOWBUTTONS = true
+SHOWINPUT = true
+SHOWSTATUS = true
+SHOWINFO = true
+SHOWMAP = true
+SHOWTABLE = false
+SHOWTEXT = true
+SHOWFOLDER = false
+SHOWEXPLORE = false
+SHOWPLOT = false
+SHOWEDITOR = true
+SHOWTREE = false
+SHOWPROJECT = true
+PREFTAB = 0
+LOOKANDFEEL = 
+SCALE = true
+SHOWNAME = true
+MOUSEFOCUS = false
+SIMPLEFD = false
+ASCSORT = true
+CASESORT = true
+MERGEDUPL = false
+COLUMN = 1
+UNICODE = true
+SHOWMARGIN = true
+MARGIN = 80
+TABSPACES = true
+INDENT = 2
+SHOWINVISIBLE = true
+SHOWNL = false
+SHOWLINES = true
+MARKLINE = true
+SAVERUN = false
+PARSEPROJ = true
+AUTO = true
+FILES = *.xml, *.xq*
+HIDDENFILES = true
+SEARCHMODE = 0
+FILTERRT = false
+EXECRT = false
+DBNAME = 
+LASTINSERT = 1
+
+# Visualizations
+MAPATTS = false
+MAPOFFSETS = 3
+MAPALGO = 0
+MAPWEIGHT = 0
+TREESLIM = true
+TREEATTS = false
+PLOTDOTS = 0
+PLOTXLOG = false
+PLOTYLOG = false
+MAXTEXT = 2097152
+MAXRESULTS = 500000
+
+# Search
+SEARCHMODES = 
+SEARCHED = 0
+REPLACED = 0
+
+
+
+# Local Options

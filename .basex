@@ -1,0 +1,40 @@
+# General Options
+DEBUG = false
+DBPATH = ./data
+LOGPATH = .logs
+REPOPATH = ./repo
+LANG = English
+LANGKEYS = false
+FAIRLOCK = true
+CACHETIMEOUT = 3600
+
+# Client/Server Architecture
+HOST = localhost
+PORT = 1984
+SERVERPORT = 1984
+USER = restxq
+PASSWORD = restxq
+SERVERHOST = 
+PROXYHOST = 
+PROXYPORT = 0
+NONPROXYHOSTS = 
+IGNORECERT = false
+IGNOREHOSTNAME = false
+TIMEOUT = 30
+KEEPALIVE = 600
+PARALLEL = 16
+LOG = true
+LOGMSGMAXLEN = 1000
+
+# HTTP Services
+WEBPATH = ./webapp
+RESTPATH = 
+RESTXQPATH = 
+PARSERESTXQ = 30
+HTTPLOCAL = false
+STOPPORT = 8985
+AUTHMETHOD = Basic
+
+# Local Options
+XINCLUDE = true
+CHOP = false
