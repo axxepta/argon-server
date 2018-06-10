@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="oxygen-sdk-sample-webapp">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/com/oxygenxml/oxygen-webapp/20.0.0.1/oxygen-webapp-20.0.0.1.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=WEB-INF/classes/ro/sync;WEB-INF/frameworks.zip;WEB-INF/options.zip;WEB-INF/plugins.zip;WEB-INF/lib/">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
