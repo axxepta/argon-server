@@ -24,7 +24,7 @@
 		<metrics.version>4.0.2</metrics.version>
 
 		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
-		<restlet.version>2.4.0</restlet.version>
+		<!--<restlet.version>2.4.0</restlet.version>-->
 		<resteasy.version>3.5.1.Final</resteasy.version>
 	</properties>
 
@@ -55,11 +55,11 @@
 			<url>http://files.basex.org/maven</url>
 		</repository>
 
-		<repository>
+		<!--<repository>
 			<id>maven-restlet</id>
 			<name>Public online Restlet repository</name>
 			<url>http://maven.restlet.com</url>
-		</repository>
+		</repository>-->
 
 	</repositories>
 
@@ -380,12 +380,15 @@
 						<webApp>
 
 							<contextPath>/${project.artifactId}</contextPath>
+							<!-- <contextPath>/some-site</contextPath> -->
 
-							<!-- <contextPath>/{basedir}/webapp</contextPath> -->
 							<baseResource
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
 								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
 							</baseResource>
+
+
+
 							<descriptor>/${project.artifactId}/WEB-INF/web.xml</descriptor>
 
 							<overrideDescriptor>${project.basedir}/webapp/WEB-INF/web.xml</overrideDescriptor>
@@ -393,19 +396,13 @@
 							<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 							<containerIncludeJarPattern>^$</containerIncludeJarPattern>
 
+							<!-- <baseAppFirst>true</baseAppFirst> -->
+
 						</webApp>
 
 						<jettyXml>${basedir}/webapp/WEB-INF/jetty.xml</jettyXml>
 
-						<connectors>
-							<connector
-								implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-								<!-- Choose HTTP port -->
-								<port>8001</port>
-								<!-- 8001 vs 8088 -->
-								<maxIdleTime>60000</maxIdleTime>
-							</connector>
-						</connectors>
+
 						<!-- Key and port for stopping Jetty -->
 						<stopKey>keyToStopJetty</stopKey>
 						<stopPort>8985</stopPort>
@@ -427,10 +424,15 @@
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 						<outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
-						<!-- <webResources> <resource> <directory>${build.sourceDirectory}</directory> 
-							<targetPath>WEB-INF/classes</targetPath> </resource> </webResources> -->
+
+						<webResources> <resource>
+							<!-- <directory>${project.basedir}/webapp/cms</directory> -->
+							<!-- <directory>${build.sourceDirectory}</directory> -->
+						    <!-- <targetPath>WEB-INF/classes</targetPath>-->
+					</resource> </webResources>
 
 						<overlays>
+							<!-- <overlay></overlay> -->
 							<!-- Add the contents of the oxygen-webapp. -->
 							<overlay>
 								<groupId>com.oxygenxml</groupId>
