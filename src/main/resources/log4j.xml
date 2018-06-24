@@ -9,18 +9,14 @@
 		<param name="immediateFlush" value="true"/>
 		<param name="threshold" value="info"/>
 		<param name="append" value="true" />
-		<param name="maxFileSize" value="1MB" />
+		<param name="maxFileSize" value="300KB" />
 		<param name="maxBackupIndex" value="10" />
-		<param name="file" value="${user.home}/logs/resteasy-argon-server.log" />
+		<param name="file" value="${user.home}/logs/rest-argon-server.log" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
 				value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
 		</layout>
 	</appender>
-
-	<logger name="de.axxepta.resteasy" level="INFO" additivity="false">
-		<appender-ref ref="file" />
-	</logger>
 	
 	<root>
 		<level value="INFO" />

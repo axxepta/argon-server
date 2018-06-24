@@ -1,10 +1,10 @@
-package de.axxepta.resteasy.health;
+package de.axxepta.health;
 
 import com.codahale.metrics.health.HealthCheck;
 
-public class AppHealth extends HealthCheck {
+public class HealthCheckImpl extends HealthCheck {
 
-    public AppHealth() {
+    public HealthCheckImpl() {
         super();
     }
 

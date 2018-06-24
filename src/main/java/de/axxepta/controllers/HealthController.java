@@ -1,7 +1,4 @@
-package de.axxepta.resteasy.services;
-
-import java.io.IOException;
-import java.util.Map;
+package de.axxepta.controllers;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,32 +10,33 @@ import org.apache.log4j.Logger;
 
 import com.codahale.metrics.health.HealthCheck.Result;
 
-import de.axxepta.resteasy.health.AppHealth;
+import de.axxepta.health.HealthCheckImpl;
 
 @Path("health")
-public class AppHealthService {
+public class HealthController {
 
-	private static final Logger LOG = Logger.getLogger(AppHealthService.class);
+	private static final Logger LOG = Logger.getLogger(HealthController.class);
 
 	@GET
 	@Path("simple-test")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String test() {
+	public Response test() {
 		LOG.info("Do simple health test");
-		AppHealth health = new AppHealth();
+		HealthCheckImpl health = new HealthCheckImpl();
 		Result result = null;
 		try {
 			result = health.check();
 			if (result.isHealthy()) {
 				LOG.info("Application is healthy");
-				return "Application is healthy ";
+				return Response.ok("Application is healthy").build();
 			} else {
 				LOG.error("Application is not healthy");
-				return "Application is not healthy";
+				return Response.ok("Application is not healthy").build();
 			}
 		} catch (Exception e) {
 			LOG.error("Check healthy error: " + e.getMessage());
-			return e.getMessage();
+			return Response.status(403)
+            .entity("Check healthy error: " + e.getMessage()).build();
 		}
 	}
 

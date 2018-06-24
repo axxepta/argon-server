@@ -1,16 +1,16 @@
-package de.axxepta.resteasy.login;
+package de.axxepta.models;
 
-public class LoginRequest {
+public class UserModel {
 
     private String username;
 
     private String password;
 
-    
-    public LoginRequest() {
+    public UserModel() {
+    	
     }
-
-    public LoginRequest(String username, String password) {
+    
+    public UserModel(String username, String password) {
         this.username = username;
         this.password = password;
     }

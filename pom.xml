@@ -17,15 +17,14 @@
 		<compileSource>1.8</compileSource>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<!-- <jettyVersion>9.3.8.v20160314</jettyVersion> -->
 		<jettyVersion>9.4.10.v20180503</jettyVersion>
 		<baseXVersion>9.0</baseXVersion>
 		<saxonVersion>9.6.0-6</saxonVersion>
 		<metrics.version>4.0.2</metrics.version>
 
 		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
-		<restlet.version>2.4.0</restlet.version>
-		<resteasy.version>3.5.1.Final</resteasy.version>
+		<jersey.version>2.27</jersey.version>
+		<hk2.version>2.5.0-b61</hk2.version>
 	</properties>
 
 	<licenses>
@@ -53,12 +52,6 @@
 			<id>basex</id>
 			<name>BaseX Maven Repository</name>
 			<url>http://files.basex.org/maven</url>
-		</repository>
-
-		<repository>
-			<id>maven-restlet</id>
-			<name>Public online Restlet repository</name>
-			<url>http://maven.restlet.com</url>
 		</repository>
 
 	</repositories>
@@ -143,18 +136,22 @@
 			<version>${jettyVersion}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-			<version>${jettyVersion}</version>
-		</dependency>
 		<!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-plus</artifactId> 
 			<version>${project.version}</version> </dependency> -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.jboss.weld.servlet</groupId> <artifactId>weld-servlet-shaded</artifactId> 
+			<version>3.0.2.Final</version> </dependency> -->
+
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
 			<version>4.6.1.201703071140-r</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
@@ -173,57 +170,66 @@
 			<version>20160810</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/log4j/log4j -->
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
-		<!-- <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-core</artifactId> 
-			<version>${metrics.version}</version> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
-			<artifactId>metrics-servlet</artifactId> <version>${metrics.version}</version> 
-			</dependency> <dependency> <groupId>de.axxepta</groupId> <artifactId>converterservices</artifactId> 
-			<version>1.0-SNAPSHOT</version> </dependency> -->
-
-
-		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-jaxrs -->
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-jaxrs</artifactId>
-			<version>${resteasy.version}</version>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-jaxb-provider</artifactId>
-			<version>${resteasy.version}</version>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-servlet-initializer</artifactId>
-			<version>${resteasy.version}</version>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-jackson-provider -->
 		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-jackson-provider</artifactId>
-			<version>${resteasy.version}</version>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/jaxrs-api -->
 		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>jaxrs-api</artifactId>
-			<version>3.0.9.Final</version>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-guice -->
 		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-guice</artifactId>
-			<version>3.5.1.Final</version>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.hk2</groupId>
+			<artifactId>hk2-locator</artifactId>
+			<version>${hk2.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.hk2</groupId>
+			<artifactId>hk2-metadata-generator</artifactId>
+			<version>${hk2.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -250,28 +256,32 @@
 			<version>${metrics.version}</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jersey2 -->
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-jersey2</artifactId>
 			<version>${metrics.version}</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-			<scope>provided</scope>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.7.25</version>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<!-- TODO: These should be parametrized. -->
 		<finalName>oxygen-sdk-sample-webapp</finalName>
 
-		<pluginManagement>
+		<defaultGoal>clean jetty:run</defaultGoal>
 
+		<pluginManagement>
 			<plugins>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -369,7 +379,7 @@
 						<createDependencyReducedPom>false</createDependencyReducedPom>
 					</configuration>
 				</plugin>
-
+			
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
@@ -381,7 +391,6 @@
 
 							<contextPath>/${project.artifactId}</contextPath>
 
-							<!-- <contextPath>/{basedir}/webapp</contextPath> -->
 							<baseResource
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
 								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
@@ -395,7 +404,7 @@
 
 						</webApp>
 
-						<jettyXml>${basedir}/webapp/WEB-INF/jetty.xml</jettyXml>
+						<jettyXml>webapp/WEB-INF/jetty.xml</jettyXml>
 
 						<connectors>
 							<connector
@@ -431,6 +440,7 @@
 							<targetPath>WEB-INF/classes</targetPath> </resource> </webResources> -->
 
 						<overlays>
+							<!-- <overlay></overlay> -->
 							<!-- Add the contents of the oxygen-webapp. -->
 							<overlay>
 								<groupId>com.oxygenxml</groupId>
