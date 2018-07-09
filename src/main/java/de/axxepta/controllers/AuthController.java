@@ -2,19 +2,15 @@ package de.axxepta.controllers;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -26,6 +22,10 @@ import org.apache.log4j.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 import de.axxepta.services.interfaces.UserServiceI;
+import de.axxepta.tools.EncryptAES;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import de.axxepta.models.UserModel;
 
 @Path("auth-services")
@@ -35,7 +35,7 @@ public class AuthController {
 	private static final Logger LOG = Logger.getLogger(AuthController.class);
 	private static final String KEY = "Argon Server KEY";
 
-	private Cipher cipher;
+	private EncryptAES encrypt;
 	
 	@Inject
 	@Named("FreshImplementation")
@@ -44,22 +44,13 @@ public class AuthController {
 	@PostConstruct
 	public void init()
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, UnsupportedEncodingException {
-		Key aesKey = new SecretKeySpec(KEY.getBytes("UTF-8"), "AES");
-		cipher = Cipher.getInstance("AES");
-		cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-	}
-
-	@GET
-	@Path("test")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response test() {		
-		LOG.info("Do a simple test for auth services");
-		if(userService != null)
-			LOG.info("injection load");
-		
-		return Response.ok("Do a simple test for auth services").build();
+		encrypt = new EncryptAES(KEY);
 	}
 	
+	@Operation(summary = "Register user", description = "Register user with JSON data that contain username and password", 
+			method = "POST", operationId="#5_1")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "user registered with succes"),
+			@ApiResponse(responseCode = "409", description = "error in user registration") })
 	@Path("registry")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -83,11 +74,15 @@ public class AuthController {
 			return Response.status(Status.BAD_REQUEST).entity("Value transmited for username is incorrect").build();
 
 		LOG.info("Registry user with username " + username 
-				+ " and password " + cipher.doFinal(password.getBytes()));
+				+ " and password " + encrypt.encrypt(password));
 		
 		return Response.status(Status.OK).entity("user " + username + " registry").build();
 	}
 
+	@Operation(summary = "Login user", description = "Login user with JSON data that contain username and password", 
+			method = "POST", operationId="#5_2")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "user login with succes"),
+			@ApiResponse(responseCode = "409", description = "error in user login") })
 	@Path("login")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -113,7 +108,7 @@ public class AuthController {
 		boolean result = userService.login(username, password);
 		
 		LOG.info("Logon user with username " + username 
-				+ " and password " + cipher.doFinal(password.getBytes())
+				+ " and password " + encrypt.encrypt(password)
 				+ " with result " + (result ? "Acceptlogin" : "Not accept"));
 		
 		return Response.status(Status.OK).entity("user " + username + " login").build();

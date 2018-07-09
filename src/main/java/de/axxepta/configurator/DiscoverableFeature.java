@@ -25,9 +25,7 @@ public class DiscoverableFeature implements Feature {
     }
     
     @Override
-    public boolean configure(FeatureContext context) {
-    	
-        
+    public boolean configure(FeatureContext context) {     
         DynamicConfigurationService dcs = scopedLocator.getService(DynamicConfigurationService.class);
         Populator populator = dcs.getPopulator();
         try {

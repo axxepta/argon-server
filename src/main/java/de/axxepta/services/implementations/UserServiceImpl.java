@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 import org.apache.log4j.Logger;
 import org.jvnet.hk2.annotations.Service;
 
-import de.axxepta.database.ConnectionDBPool;
+import de.axxepta.database.ConnectionDBPoolRest;
 import de.axxepta.services.interfaces.UserServiceI;
 
 @Service(name="FreshImplementation")
@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserServiceI{
 
 	private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 	
-	ConnectionDBPool connDBPool;
+	ConnectionDBPoolRest connDBPool;
 	
 	public UserServiceImpl() throws IOException {
 		//connDBPool = ConnectionDBPool.getInstance();

@@ -25,6 +25,7 @@
 		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
 		<jersey.version>2.27</jersey.version>
 		<hk2.version>2.5.0-b61</hk2.version>
+		<swagger.version>2.0.2</swagger.version>
 	</properties>
 
 	<licenses>
@@ -187,6 +188,8 @@
 			<artifactId>jersey-container-servlet</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
+		<!-- <dependency> <groupId>org.glassfish.jersey.media</groupId> <artifactId>jersey-media-multipart</artifactId> 
+			<version>${jersey.version}</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -272,6 +275,36 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
 			<version>1.7.25</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-core</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-jaxrs2</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-jaxrs2-servlet-initializer</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-models</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -379,7 +412,7 @@
 						<createDependencyReducedPom>false</createDependencyReducedPom>
 					</configuration>
 				</plugin>
-			
+
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
