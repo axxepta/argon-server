@@ -20,6 +20,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
 import de.schlichtherle.io.File;
 import ro.sync.servlet.RESTFileBrowser;
+import ro.sync.servlet.RESTStatus;
 import ro.sync.servlet.admin.RESTAdminLicense;
 import ro.sync.servlet.files.RESTFileService;
 

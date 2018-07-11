@@ -38,11 +38,20 @@ public class CheckSumController {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response computeMD5() {
 		try {
-			URL url = Paths.get("target", "jetty_overlays").toUri().toURL();
-			String md5Hash = CalculateMD5.calcMD5Hash(new File(url.getPath()));
-			LOG.info("Calculate md5 sum for " + url.getPath() +  " obtaining " + md5Hash); 
+			URL url1 = Paths.get("target", "jetty_overlays").toUri().toURL();
+			URL url2 = Paths.get("target", "classes").toUri().toURL();
+			String md5Hash1 = CalculateMD5.calcMD5Hash(new File(url1.getPath()));
+			String md5Hash2 = CalculateMD5.calcMD5Hash(new File(url2.getPath()));
+			
+			String messageHash = "Calculate md5 sum for "  + url1.getPath() +  " is obtained " + md5Hash1 + 
+					" and for " + url2 + " is obtained " + md5Hash2;
+			
+			LOG.info(messageHash); 
+			
 			metricRegistry.mark();
-			return Response.ok("MD5 sum is " + md5Hash).build();
+			
+			return Response.ok(messageHash).build();			
+			
 		} catch (IOException e) {
 			LOG.error("Error in md5 calculation " + e.getMessage());
 			return Response.status(Status.CONFLICT).entity("Check healthy error: " + e.getMessage()).build();

@@ -27,7 +27,9 @@ import de.axxepta.listeners.RegisterMetricsListener;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import ro.sync.servlet.RESTStatus;
 import ro.sync.servlet.admin.RESTAdminPing;
+import ro.sync.servlet.util.SecurityUtil;
 
 @Path("health")
 public class HealthController {
@@ -122,5 +124,37 @@ public class HealthController {
 		String ping = adminPing.ping();
 		LOG.info("ping =>" + ping);
 		return Response.status(Status.OK).entity("ping =>" + ping).build();
+	}
+	
+	@Operation(summary = "Rest service for report of resources", description = "Retrieve JSON with rest report of resources from oxygen", 
+			method = "GET", operationId="#2_6")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report in JSON") })	
+	@Path("rest-report")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response restReport() {
+		metricRegistry.mark();
+		RESTStatus  restStatus = resourceContext.getResource(RESTStatus.class);
+		Map <String, Object > reportInfo = restStatus.getReportInfo();
+		LOG.info("Rest report of resourse");
+		return Response.status(Status.OK).entity(reportInfo).build();
+	}
+	
+	@Operation(summary = "Check security", description = "Response if security is enabled or not", 
+			method = "GET", operationId="#2_7")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report if security is enabled") })	
+	@Path("check-security")
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response checkSecurity() {
+		metricRegistry.mark();
+		String response = null;
+		if(SecurityUtil.isSecurityEnabled()) 
+			response = "Securiy enabled";
+		else
+			response = " Security is not enbled";
+		LOG.info(response);
+		return Response.status(Status.OK).entity(response).build();
+		
 	}
 }
