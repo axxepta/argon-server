@@ -11,10 +11,9 @@
 	<packaging>war</packaging>
 
 	<properties>
-
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<compileSource>1.8</compileSource>
+		<maven.compiler.source>10</maven.compiler.source>
+		<maven.compiler.target>10</maven.compiler.target>
+		<compileSource>10</compileSource>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jettyVersion>9.4.10.v20180503</jettyVersion>
@@ -22,7 +21,7 @@
 		<saxonVersion>9.6.0-6</saxonVersion>
 		<metrics.version>4.0.2</metrics.version>
 
-		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
+		<oxygen.sdk.version>20.1.0.1</oxygen.sdk.version>
 		<jersey.version>2.27</jersey.version>
 		<hk2.version>2.5.0-b61</hk2.version>
 		<swagger.version>2.0.2</swagger.version>
@@ -198,12 +197,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
 			<version>${jersey.version}</version>
@@ -222,12 +215,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-		
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
@@ -328,8 +315,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.7.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.source}</target>
 						<sources>
 							<source>src/main/java</source>
 						</sources>
@@ -337,6 +324,13 @@
 						<fork>true</fork>
 						<useIncrementalCompilation>true</useIncrementalCompilation>
 					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.ow2.asm</groupId>
+							<artifactId>asm</artifactId>
+							<version>6.1.1</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 
 				<plugin>
@@ -408,9 +402,7 @@
 					<configuration>
 
 						<webApp>
-
 							<contextPath>/${project.artifactId}</contextPath>
-
 							<baseResource
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
 								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
@@ -494,7 +486,6 @@
 	</build>
 
 	<profiles>
-
 		<profile>
 			<id>start</id>
 			<build>
