@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -15,14 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInputImpl;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
-import de.schlichtherle.io.File;
 import ro.sync.servlet.RESTFileBrowser;
-import ro.sync.servlet.RESTStatus;
-import ro.sync.servlet.admin.RESTAdminLicense;
-import ro.sync.servlet.files.RESTFileService;
 
 
 @Path("files")

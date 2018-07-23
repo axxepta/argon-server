@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.axxepta.exceptions.ResponseException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -68,7 +69,7 @@ public class LicenseController {
 	@Path("set-register-license")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response setRegisterLicense(@QueryParam("license") String licenseInfo) {
+	public Response setRegisterLicense(@QueryParam("license") String licenseInfo) throws ResponseException {
 		RESTAdminLicense restAdminLicense = resourceContext.getResource(RESTAdminLicense.class);
 		Map<String, String> mapLicense = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -80,7 +81,8 @@ public class LicenseController {
 			return Response.ok(message).build();
 		} catch (IOException e) {
 			LOG.error("Error in register license " + e.getMessage());
-			return Response.status(Status.CONFLICT).entity("Error in register license " + e.getMessage()).build();
+			throw new ResponseException(Response.Status.CONFLICT.getStatusCode(),
+					"Error in register license " + e.getMessage());
 		}	
 	}
 }

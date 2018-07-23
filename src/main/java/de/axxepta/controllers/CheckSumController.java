@@ -10,12 +10,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 
 import com.codahale.metrics.Meter;
 
+import de.axxepta.exceptions.ResponseException;
 import de.axxepta.listeners.RegisterMetricsListener;
 import de.axxepta.tools.CalculateMD5;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +36,7 @@ public class CheckSumController {
 	@GET
 	@Path("md5sum")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response computeMD5() {
+	public Response computeMD5() throws ResponseException {
 		try {
 			URL url1 = Paths.get("target", "jetty_overlays").toUri().toURL();
 			URL url2 = Paths.get("target", "classes").toUri().toURL();
@@ -54,7 +54,8 @@ public class CheckSumController {
 			
 		} catch (IOException e) {
 			LOG.error("Error in md5 calculation " + e.getMessage());
-			return Response.status(Status.CONFLICT).entity("Check healthy error: " + e.getMessage()).build();
+			throw new ResponseException(Response.Status.CONFLICT.getStatusCode(),
+					"Check checksum error: " + e.getMessage());
 		} 
 	}
 }

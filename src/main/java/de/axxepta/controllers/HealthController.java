@@ -3,6 +3,7 @@ package de.axxepta.controllers;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,8 +23,10 @@ import org.glassfish.jersey.server.monitoring.ResponseStatistics;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.health.HealthCheck.Result;
 
+import de.axxepta.exceptions.ResponseException;
 import de.axxepta.health.HealthCheckImpl;
 import de.axxepta.listeners.RegisterMetricsListener;
+import de.axxepta.services.interfaces.DatabaseI;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -42,6 +45,10 @@ public class HealthController {
 	@Context
 	private ResourceContext resourceContext;
 
+	@Inject
+	@Named("DBImpl")
+	private DatabaseI databaseBusiness;
+	
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
 	
 	@Operation(summary = "Simple health check service", description = "Check in a simple way if the application is healthy", 
@@ -51,7 +58,7 @@ public class HealthController {
 	@GET
 	@Path("simple-test")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response test() {
+	public Response test() throws ResponseException {
 		LOG.info("Do simple health test");
 		metricRegistry.mark();
 		HealthCheckImpl health = new HealthCheckImpl();
@@ -67,7 +74,8 @@ public class HealthController {
 			}
 		} catch (Exception e) {
 			LOG.error("Check healthy error: " + e.getMessage());
-			return Response.status(Status.CONFLICT).entity("Check healthy error: " + e.getMessage()).build();
+			throw new ResponseException(Response.Status.CONFLICT.getStatusCode(),
+					"Check healthy error: " + e.getMessage());
 		}
 	}
 
@@ -153,6 +161,24 @@ public class HealthController {
 			response = "Securiy enabled";
 		else
 			response = " Security is not enbled";
+		LOG.info(response);
+		return Response.status(Status.OK).entity(response).build();
+		
+	}
+	
+	@Operation(summary = "Check database", description = "Check if database is functional", 
+			method = "GET", operationId="#2_8")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report if dabase is functional") })	
+	@Path("check-database")
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response checkDatabase() {
+		metricRegistry.mark();
+		String response;
+		if(databaseBusiness.testValidityConn()) 
+			response = "Connection with database can be done";
+		else
+			response = "Error in connection with database";
 		LOG.info(response);
 		return Response.status(Status.OK).entity(response).build();
 		
