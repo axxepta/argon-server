@@ -11,10 +11,9 @@
 	<packaging>war</packaging>
 
 	<properties>
-
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<compileSource>1.8</compileSource>
+		<maven.compiler.source>10</maven.compiler.source>
+		<maven.compiler.target>10</maven.compiler.target>
+		<compileSource>10</compileSource>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jettyVersion>9.4.10.v20180503</jettyVersion>
@@ -22,9 +21,10 @@
 		<saxonVersion>9.6.0-6</saxonVersion>
 		<metrics.version>4.0.2</metrics.version>
 
-		<oxygen.sdk.version>20.0.0.1</oxygen.sdk.version>
+		<oxygen.sdk.version>20.1.0.1</oxygen.sdk.version>
 		<jersey.version>2.27</jersey.version>
 		<hk2.version>2.5.0-b61</hk2.version>
+		<swagger.version>2.0.2</swagger.version>
 	</properties>
 
 	<licenses>
@@ -53,7 +53,6 @@
 			<name>BaseX Maven Repository</name>
 			<url>http://files.basex.org/maven</url>
 		</repository>
-
 	</repositories>
 
 	<organization>
@@ -187,16 +186,12 @@
 			<artifactId>jersey-container-servlet</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
+		<!-- <dependency> <groupId>org.glassfish.jersey.media</groupId> <artifactId>jersey-media-multipart</artifactId> 
+			<version>${jersey.version}</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
 
@@ -216,19 +211,6 @@
 			<groupId>org.glassfish.hk2</groupId>
 			<artifactId>hk2-metadata-generator</artifactId>
 			<version>${hk2.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -273,6 +255,30 @@
 			<artifactId>jul-to-slf4j</artifactId>
 			<version>1.7.25</version>
 		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-core</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-jaxrs2</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-jaxrs2-servlet-initializer</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -307,9 +313,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.7.0</version>
-					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+					<configuration>			 
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>				
 						<sources>
 							<source>src/main/java</source>
 						</sources>
@@ -317,6 +323,13 @@
 						<fork>true</fork>
 						<useIncrementalCompilation>true</useIncrementalCompilation>
 					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.ow2.asm</groupId>
+							<artifactId>asm</artifactId>
+							<version>6.1.1</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 
 				<plugin>
@@ -379,7 +392,7 @@
 						<createDependencyReducedPom>false</createDependencyReducedPom>
 					</configuration>
 				</plugin>
-			
+
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
 					<artifactId>jetty-maven-plugin</artifactId>
@@ -388,9 +401,7 @@
 					<configuration>
 
 						<webApp>
-
 							<contextPath>/${project.artifactId}</contextPath>
-
 							<baseResource
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
 								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
@@ -474,7 +485,6 @@
 	</build>
 
 	<profiles>
-
 		<profile>
 			<id>start</id>
 			<build>

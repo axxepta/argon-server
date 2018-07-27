@@ -15,6 +15,9 @@ import org.apache.log4j.Logger;
 import com.codahale.metrics.Meter;
 
 import de.axxepta.listeners.RegisterMetricsListener;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Path("testing")
 public class TestController {
@@ -26,6 +29,9 @@ public class TestController {
 	@Context
 	private HttpServletRequest request;
 
+	@Operation(summary = "Doing simple test", description = "Doing a test by returning a simple message", 
+			   method = "GET", operationId="#1_1")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "message test") })
 	@GET
 	@Path("test")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -35,11 +41,13 @@ public class TestController {
 		String token = request.getSession().getId();
 		LOG.info("Session id " + token);
 
-		
 		LOG.info("Do a simple test on argon server");
 		return Response.ok("Do a simple test on argon server").build();
 	}
 
+	@Operation(summary = "Doing simple test and adding timestamp", description = "Doing a test by returning a simple message with an timestamp", 
+			method = "GET", operationId="#1_2")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "message test with date") })
 	@GET
 	@Path("test-date")
 	@Produces(MediaType.TEXT_PLAIN)
