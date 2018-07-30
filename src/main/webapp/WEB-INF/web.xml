@@ -6,6 +6,7 @@
 	<display-name>BaseX: XML Backend</display-name>
 	<description>HTTP Services</description>
 
+	<!--
 	<context-param>
 		<param-name>org.eclipse.jetty.servlet.SessionCookie</param-name>
 		<param-value>XSESSIONID</param-value>
@@ -14,6 +15,8 @@
 		<param-name>org.eclipse.jetty.servlet.SessionIdPathParameterName</param-name>
 		<param-value>xsessionid</param-value>
 	</context-param>
+	-->
+
 	<!-- <context-param> <param-name>resteasy.servlet.mapping.prefix</param-name> 
 		<param-value>/rest-services</param-value> </context-param> -->
 	<session-config>
@@ -146,11 +149,39 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
+
 	<servlet>
 		<servlet-name>swagger-bootstrap</servlet-name>
 		<servlet-class>de.axxepta.configurator.ArgonSwaggerBootstrap</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
+
+	<servlet>
+
+		<servlet-name>Resteasy</servlet-name>
+		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher</servlet-class>
+
+		<init-param>
+			<param-name>javax.ws.rs.Application</param-name>
+			<param-value>ro.sync.servlet.OxygenApplication</param-value>
+		</init-param>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+
+
+	<servlet-mapping>
+		<servlet-name>Resteasy</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+		<url-pattern>/rest-public/*</url-pattern>
+		<url-pattern>/rest-files/*</url-pattern>
+		<url-pattern>/admin/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Context listener that initializes the WebApp. Registered here to avoid ordering issues. -->
+
+	<listener>
+		<listener-class>ro.sync.servlet.StartupServlet</listener-class>
+	</listener>
 
 	
 	<!-- <servlet-mapping> <servlet-name>Jersey REST Service</servlet-name> 

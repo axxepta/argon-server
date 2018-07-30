@@ -11,9 +11,10 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<maven.compiler.source>10</maven.compiler.source>
-		<maven.compiler.target>10</maven.compiler.target>
-		<compileSource>10</compileSource>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
+		<compileSource>8</compileSource>
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jettyVersion>9.4.10.v20180503</jettyVersion>
@@ -406,16 +407,20 @@
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
 								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
 							</baseResource>
-							<descriptor>/${project.artifactId}/WEB-INF/web.xml</descriptor>
 
-							<overrideDescriptor>${project.basedir}/webapp/WEB-INF/web.xml</overrideDescriptor>
+							<descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+
+
+							<!-- <descriptor>/${project.artifactId}/WEB-INF/web.xml</descriptor> -->
+
+							<!-- <overrideDescriptor>${project.basedir}/webapp/WEB-INF/web.xml</overrideDescriptor> -->
 
 							<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 							<containerIncludeJarPattern>^$</containerIncludeJarPattern>
 
 						</webApp>
 
-						<jettyXml>webapp/WEB-INF/jetty.xml</jettyXml>
+						<jettyXml>${project.basedir}/src/main/webapp/WEB-INF/jetty.xml</jettyXml>
 
 						<connectors>
 							<connector
@@ -445,10 +450,13 @@
 
 
 					<configuration>
-						<failOnMissingWebXml>false</failOnMissingWebXml>
+
+						<failOnMissingWebXml>true</failOnMissingWebXml>
 						<outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
 						<!-- <webResources> <resource> <directory>${build.sourceDirectory}</directory> 
 							<targetPath>WEB-INF/classes</targetPath> </resource> </webResources> -->
+
+						<!-- <dependentWarExcludes>WEB-INF/web.xml</dependentWarExcludes> -->
 
 						<overlays>
 							<!-- <overlay></overlay> -->
@@ -464,7 +472,9 @@
 									<exclude>WEB-INF/lib/</exclude>
 
 								</excludes>
+
 							</overlay>
+							<!-- <warSourceExcludes>**/web.xml</warSourceExcludes> -->
 							<!-- <!-\- Add the frameworks directories. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
 								<artifactId>bundle-frameworks</artifactId> <type>jar</type> <targetPath>WEB-INF/</targetPath> 
 								</overlay> <!-\- Add the options directories. -\-> <overlay> <groupId>${project.parent.groupId}</groupId> 
