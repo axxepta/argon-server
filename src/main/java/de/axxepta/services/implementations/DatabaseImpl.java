@@ -7,11 +7,11 @@ import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
 import de.axxepta.database.ConnectionDBPoolRest;
-import de.axxepta.services.interfaces.DatabaseI;
+import de.axxepta.services.interfaces.IDatabase;
 
 @Service(name="DBImpl")
 @Singleton
-public class DatabaseImpl implements DatabaseI{
+public class DatabaseImpl implements IDatabase{
 
 	private final static String URL_CONN = "...";
 	

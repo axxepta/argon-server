@@ -19,7 +19,7 @@ public class SecurityFilter extends CsrfFilter {
 
 	private static final Logger LOG = Logger.getLogger(SecurityFilter.class);
 
-	private static final String[] PATH_NAMES = { "auth-services", "database-services" };
+	private static final String[] PATH_NAMES = { "auth-services", "documents-services", "database-services" };
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

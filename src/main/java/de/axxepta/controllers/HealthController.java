@@ -26,7 +26,7 @@ import com.codahale.metrics.health.HealthCheck.Result;
 import de.axxepta.exceptions.ResponseException;
 import de.axxepta.health.HealthCheckImpl;
 import de.axxepta.listeners.RegisterMetricsListener;
-import de.axxepta.services.interfaces.DatabaseI;
+import de.axxepta.services.interfaces.IDatabase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -47,7 +47,7 @@ public class HealthController {
 
 	@Inject
 	@Named("DBImpl")
-	private DatabaseI databaseBusiness;
+	private IDatabase databaseBusiness;
 	
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
 	
