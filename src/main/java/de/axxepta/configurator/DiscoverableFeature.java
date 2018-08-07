@@ -19,7 +19,7 @@ public class DiscoverableFeature implements Feature {
 
 	private final ServiceLocator scopedLocator;
 
-    @Inject
+	@Inject
     private DiscoverableFeature(ServiceLocator scopedLocator) {
         this.scopedLocator = scopedLocator;
     }

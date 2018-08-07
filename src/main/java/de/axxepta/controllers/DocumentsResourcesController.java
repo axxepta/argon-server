@@ -1,15 +1,22 @@
 package de.axxepta.controllers;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -17,8 +24,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 
 import de.axxepta.exceptions.ResponseException;
 import de.axxepta.listeners.RegisterMetricsListener;
@@ -26,7 +36,7 @@ import de.axxepta.models.FileModel;
 import de.axxepta.services.interfaces.IDocumentsResourceService;
 import de.axxepta.tools.ValidationString;
 
-@Path("documents-services")
+@Path("document-services")
 public class DocumentsResourcesController {
 
 	private static final Logger LOG = Logger.getLogger(DocumentsResourcesController.class);
@@ -37,33 +47,73 @@ public class DocumentsResourcesController {
 	@Named("FilesResourceImplementation")
 	private IDocumentsResourceService documentsService;
 
-	@GET
-	@Path("local-file-to-url")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response localFileUrl(String fileNamePath) throws ResponseException {
-		if (!ValidationString.validationString(fileNamePath, "file name path")) {
-			metricRegistry.mark();
-			
-			LOG.error("Value transmited for filename is incorrect");
-			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
-					"Value transmited for filename is incorrect");
+	private List<File> tmpFileList = new ArrayList<>();
+	
+	@PreDestroy
+	public void init() {
+		for(File tmpFile : tmpFileList) {
+			tmpFile.deleteOnExit();
+			LOG.info(tmpFileList + " put on deleted");
 		}
-		File file = new File(fileNamePath);
-		if (!file.exists()) {
-			LOG.error("file not exist");
-			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
-					"Value transmited for username is incorrect");
-		}
-		URL fileURL = null;
-		try {
-			fileURL = file.toURI().toURL();
-		} catch (MalformedURLException e) {
-			LOG.error(e.getMessage());
-		}
-		return Response.ok(fileURL).build();
 	}
 	
+	@POST
+	@Path("local-file-to-url")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response uploadFile(@FormDataParam("file") InputStream fileInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileMetaData) throws ResponseException {
+		metricRegistry.mark();
+		Timer timer = new Timer();
+		if(fileInputStream == null || fileMetaData == null) {
+			LOG.error("At least one of the parameters is missing");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
+					"At least one of the parameters is missing");
+		}
+		
+		Timer.Context timerContext = timer.time();
+		
+		String prefixFile = fileMetaData.getFileName();
+		File tempFileUpload;
+		try {
+			tempFileUpload = File.createTempFile(prefixFile, ".tmp");
+		} catch (IOException e) {
+			LOG.error("Temp file cannot be created " + e.getMessage());
+			throw new ResponseException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+					"Temp file cannot be created");
+		}
+		
+		try {
+			int read = 0;
+			byte[] buffer = new byte[1024];
+
+			OutputStream outStream = new FileOutputStream(tempFileUpload);
+			while ((read = fileInputStream.read(buffer)) != -1) {
+				outStream.write(buffer, 0, read);
+			}
+			outStream.flush();
+			outStream.close();
+		} catch (IOException e) {
+			LOG.error(e.getMessage());
+			throw new ResponseException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+					"Internal error in file uploading");
+		}
+
+		tmpFileList.add(tempFileUpload);
+		
+		URL fileURL = null;
+		try {
+			fileURL = tempFileUpload.toURI().toURL();
+		} catch (MalformedURLException e) {
+			LOG.error(e.getMessage());
+			return null;
+		}
+		
+		timerContext.stop();
+		LOG.info("URL for uploaded file is " + tempFileUpload.getPath() + " was obtained in " + timer.getCount());
+		return Response.ok(fileURL.toString()).build();
+	}
+
 	@POST
 	@Path("upload-file")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -90,7 +140,7 @@ public class DocumentsResourcesController {
 		return null;
 	}
 
-	@PUT
+	@DELETE
 	@Path("delete-file")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response deleteFile(String fileName) throws ResponseException {
@@ -111,7 +161,7 @@ public class DocumentsResourcesController {
 	public Response existFile(String fileName) {
 		LOG.info("test if file");
 		metricRegistry.mark();
-		
+
 		return Response.status(Status.OK).entity("File  " + fileName + " was deleted").build();
 	}
 
@@ -122,7 +172,7 @@ public class DocumentsResourcesController {
 	public Response retrieveFile(String fileName) throws ResponseException {
 		LOG.info("retrieve file");
 		metricRegistry.mark();
-		
+
 		if (!ValidationString.validationString(fileName, "fileName")) {
 			LOG.error("File name is not valid");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(), "File name is not valid");
