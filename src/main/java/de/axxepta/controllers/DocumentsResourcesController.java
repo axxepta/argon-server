@@ -19,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -33,7 +34,7 @@ import com.codahale.metrics.Timer;
 import de.axxepta.exceptions.ResponseException;
 import de.axxepta.listeners.RegisterMetricsListener;
 import de.axxepta.models.FileModel;
-import de.axxepta.services.interfaces.IDocumentsResourceService;
+import de.axxepta.services.interfaces.IDatabaseResourceService;
 import de.axxepta.tools.ValidationString;
 
 @Path("document-services")
@@ -44,19 +45,19 @@ public class DocumentsResourcesController {
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
 
 	@Inject
-	@Named("FilesResourceImplementation")
-	private IDocumentsResourceService documentsService;
+	@Named("DatabaseBaseXServiceImplementation")
+	private IDatabaseResourceService documentsService;
 
 	private List<File> tmpFileList = new ArrayList<>();
-	
+
 	@PreDestroy
-	public void init() {
-		for(File tmpFile : tmpFileList) {
+	private void init() {
+		for (File tmpFile : tmpFileList) {
 			tmpFile.deleteOnExit();
 			LOG.info(tmpFileList + " put on deleted");
 		}
 	}
-	
+
 	@POST
 	@Path("local-file-to-url")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -65,14 +66,14 @@ public class DocumentsResourcesController {
 			@FormDataParam("file") FormDataContentDisposition fileMetaData) throws ResponseException {
 		metricRegistry.mark();
 		Timer timer = new Timer();
-		if(fileInputStream == null || fileMetaData == null) {
+		if (fileInputStream == null || fileMetaData == null) {
 			LOG.error("At least one of the parameters is missing");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
 					"At least one of the parameters is missing");
 		}
-		
+
 		Timer.Context timerContext = timer.time();
-		
+
 		String prefixFile = fileMetaData.getFileName();
 		File tempFileUpload;
 		try {
@@ -82,7 +83,7 @@ public class DocumentsResourcesController {
 			throw new ResponseException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
 					"Temp file cannot be created");
 		}
-		
+
 		try {
 			int read = 0;
 			byte[] buffer = new byte[1024];
@@ -100,7 +101,7 @@ public class DocumentsResourcesController {
 		}
 
 		tmpFileList.add(tempFileUpload);
-		
+
 		URL fileURL = null;
 		try {
 			fileURL = tempFileUpload.toURI().toURL();
@@ -108,7 +109,7 @@ public class DocumentsResourcesController {
 			LOG.error(e.getMessage());
 			return null;
 		}
-		
+
 		timerContext.stop();
 		LOG.info("URL for uploaded file is " + tempFileUpload.getPath() + " was obtained in " + timer.getCount());
 		return Response.ok(fileURL.toString()).build();
@@ -119,7 +120,7 @@ public class DocumentsResourcesController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response uploadFile(FileModel fileModel) throws ResponseException {
-		LOG.info("upload file");
+		LOG.info("upload file service");
 		metricRegistry.mark();
 
 		if (fileModel == null)
@@ -144,7 +145,7 @@ public class DocumentsResourcesController {
 	@Path("delete-file")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response deleteFile(String fileName) throws ResponseException {
-		LOG.info("delete file");
+		LOG.info("delete file service");
 		metricRegistry.mark();
 
 		if (!ValidationString.validationString(fileName, "fileName")) {
@@ -157,9 +158,8 @@ public class DocumentsResourcesController {
 
 	@GET
 	@Path("exist-file")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response existFile(String fileName) {
-		LOG.info("test if file");
+	public Response existFile(@QueryParam("filename") String fileName) {
+		LOG.info("test if file service");
 		metricRegistry.mark();
 
 		return Response.status(Status.OK).entity("File  " + fileName + " was deleted").build();
@@ -167,10 +167,9 @@ public class DocumentsResourcesController {
 
 	@GET
 	@Path("retrieve-file")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_XML)
-	public Response retrieveFile(String fileName) throws ResponseException {
-		LOG.info("retrieve file");
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response retrieveFile(@QueryParam("filename") String fileName) throws ResponseException {
+		LOG.info("retrieve file service");
 		metricRegistry.mark();
 
 		if (!ValidationString.validationString(fileName, "fileName")) {

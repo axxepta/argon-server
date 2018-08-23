@@ -185,7 +185,7 @@
 			<artifactId>jersey-container-servlet</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-multipart</artifactId>
@@ -193,6 +193,12 @@
 		</dependency>
 		<!-- <dependency> <groupId>org.glassfish.jersey.media</groupId> <artifactId>jersey-media-multipart</artifactId> 
 			<version>${jersey.version}</version> </dependency> -->
+
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -262,6 +268,25 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.25</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-ext</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core</artifactId>
 			<version>${swagger.version}</version>
@@ -301,6 +326,18 @@
 			<groupId>net.java.dev.msv</groupId>
 			<artifactId>msv-core</artifactId>
 			<version>2013.6.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.xodus</groupId>
+			<artifactId>xodus-openAPI</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.xodus</groupId>
+			<artifactId>xodus-environment</artifactId>
+			<version>1.2.3</version>
 		</dependency>
 
 		<dependency>
@@ -526,7 +563,7 @@
 						<configuration>
 							<mainClass>org.basex.BaseXHTTP</mainClass>
 							<arguments>
-								<argument>-h8984</argument>
+								<argument>-h8801</argument>
 								<argument>-s9895</argument>
 								<argument>-p1984</argument>
 								<!-- <argument>-Urestxq</argument> <argument>-Prestxq</argument> -->

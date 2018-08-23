@@ -1,6 +1,7 @@
 package de.axxepta.configurator;
 
 import java.io.IOException;
+
 import javax.ws.rs.ApplicationPath;
 
 import org.apache.log4j.Logger;

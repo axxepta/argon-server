@@ -73,11 +73,11 @@
 		<servlet-class>org.basex.http.rest.RESTServlet</servlet-class>
 		<init-param>
 			<param-name>org.basex.user</param-name>
-			<param-value>restxq</param-value>
+			<param-value>admin</param-value>
 		</init-param>
 		<init-param>
 			<param-name>org.basex.password</param-name>
-			<param-value>restxq</param-value>
+			<param-value>admin</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>

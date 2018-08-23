@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresUser;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.crypto.hash.format.DefaultHashFormatFactory;
@@ -25,27 +26,30 @@ import org.apache.shiro.web.env.EnvironmentLoader;
 import org.apache.shiro.web.env.IniWebEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
-import de.axxepta.services.interfaces.IUserService;
+import de.axxepta.services.interfaces.IAuthUserService;
 import ro.sync.auth.PropertiesRealmWithDefaultUsersFile;
 
 @Service(name = "UserAuthImplementation")
 @Singleton
-public class UserServiceImpl implements IUserService {
+public class AuthUserServiceImpl implements IAuthUserService {
 
-	private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
+	private static final Logger LOG = Logger.getLogger(AuthUserServiceImpl.class);
 
 	@Context
 	private HttpServletRequest request;
 
 	@Override
 	public boolean login(String username, String password) {
-		try {
-			Subject currentUser = SecurityUtils.getSubject();
-			currentUser.login(new UsernamePasswordToken(username, password, true));
-			LOG.info("Login user with username " + username);
-			return true;
-		} catch (AuthenticationException e) {}
+		Subject currentUser = SecurityUtils.getSubject();
+		if (!currentUser.isAuthenticated()) {
+			try {
 
+				currentUser.login(new UsernamePasswordToken(username, password, true));
+				LOG.info("Login user with username " + username);
+				return true;
+			} catch (AuthenticationException e) {
+			}
+		}
 		return false;
 	}
 
@@ -84,6 +88,32 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	@Override
+	public Boolean hasRoleActualUser(String role) {
+		Subject currentUser = SecurityUtils.getSubject();
+		if (!currentUser.isAuthenticated()) {
+			LOG.info("not exist a current user authenticated");
+			return null;
+		}
+		LOG.info("Check role " + role + " for user with username " + currentUser.getSession().getAttribute("username"));
+		return currentUser.hasRole(role);
+	}
+
+	@RequiresUser
+	public String resetPasswordActualLoginUser() {
+		Subject currentUser = SecurityUtils.getSubject();
+		if (!currentUser.isAuthenticated()) {
+			LOG.info("not exist a current user authenticated");
+			return null;
+		}
+		String generatedPassword = generateString(15, 'A', 'z');
+		String currentUsername = (String) currentUser.getSession().getAttribute("username");
+		
+	
+
+		return generatedPassword;
+	}
+
+	@Override
 	public boolean logout() {
 		Subject subject = ThreadContext.getSubject();
 		if (getActualUsername() == null) {
@@ -103,13 +133,11 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	private String generateString(int size, char firstChar, char lastChar) {
-		if((int) firstChar >= (int) lastChar)
-    		return null;
+		if ((int) firstChar >= (int) lastChar)
+			return null;
 		Random rand = new java.util.Random();
 		return rand.ints(size, firstChar, lastChar + 1).mapToObj((ch) -> (char) ch)
 				.collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
 	}
-
-	
 
 }

@@ -1,16 +1,16 @@
 package de.axxepta.models;
 
-public class UserModel {
+public class UserAuthModel {
 
     private String username;
 
     private String password;
 
-    public UserModel() {
+    public UserAuthModel() {
     	
     }
     
-    public UserModel(String username, String password) {
+    public UserAuthModel(String username, String password) {
         this.username = username;
         this.password = password;
     }

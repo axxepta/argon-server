@@ -16,6 +16,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -38,8 +39,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import ro.sync.auth.PropertiesRealmWithDefaultUsersFile;
 import de.axxepta.exceptions.ResponseException;
 import de.axxepta.listeners.RegisterMetricsListener;
-import de.axxepta.models.UserModel;
-import de.axxepta.services.interfaces.IUserService;
+import de.axxepta.models.UserAuthModel;
+import de.axxepta.services.interfaces.IAuthUserService;
 
 @Path("auth-services")
 @Service
@@ -49,10 +50,10 @@ public class AuthController {
 	private static final String KEY = "Argon Server KEY";
 
 	private EncryptAES encrypt;
-
+	
 	@Inject
 	@Named("UserAuthImplementation")
-	private IUserService userService;
+	private IAuthUserService userService;
 
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
 
@@ -83,7 +84,7 @@ public class AuthController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@POST
-	public Response registryUser(UserModel user) throws ResponseException {
+	public Response registryUser(UserAuthModel user) throws ResponseException {
 
 		LOG.info("registry service ");
 
@@ -134,7 +135,7 @@ public class AuthController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@POST
-	public Response loginUser(UserModel user) throws ResponseException {
+	public Response loginUser(UserAuthModel user) throws ResponseException {
 
 		LOG.info("registry service ");
 		
@@ -194,7 +195,32 @@ public class AuthController {
 		}
 	}
 
-	@Operation(summary = "Logout", description = "Logout user session", method = "POST", operationId = "#5_4")
+	@Operation(summary = "Check if have an role", description = "Check if that actual user have that role", method = "GET", operationId = "#5_4")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "user have or not searched role name"),
+			@ApiResponse(responseCode = "400", description = "role name cannot be validated because is tranmissed incorectly"),
+			@ApiResponse(responseCode = "409", description = "subject cannot be obtained") })
+	@GET
+	@Path("check-role")
+	public Response hasRoleActualUser(@QueryParam("checked-role")String role) throws ResponseException {
+		if (!ValidationString.validationString(role, "role")) {
+			LOG.error("Value transmited for username is incorrect");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
+					"Value transmited for username is incorrect");
+		}
+		Boolean result = userService.hasRoleActualUser(role);
+		metricRegistry.mark();
+		if(result == null){
+			return Response.status(Status.CONFLICT).entity("No role name can be given").build();
+		}
+		if (result) {
+			return Response.status(Status.OK).entity("Logged user have " + role + " role").build();
+		} else {
+			return Response.status(Status.OK).entity("Logged user not have " + role + " role").build();
+		}
+	}
+	
+	@Operation(summary = "Logout", description = "Logout user session", method = "POST", operationId = "#5_5")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "logout"),
 			@ApiResponse(responseCode = "202", description = "no user logged") })
 

@@ -7,7 +7,7 @@ import java.util.List;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
-public interface IDocumentsResourceService {
+public interface IDatabaseResourceService {
 
 	public boolean uploadFile(URL fileURL, String fileRef);
 	
@@ -20,4 +20,10 @@ public interface IDocumentsResourceService {
 	public List<String> listFiles();
 	
 	public boolean deleteFile(String fileName);
+	
+	public boolean testDB(String resourceName);
+	
+	public String showDatabases();
+	
+	public String showInfosDatabase(String databaseName);
 }

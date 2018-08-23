@@ -1,4 +1,4 @@
-package de.axxepta.health;
+package de.axxepta.tools;
 
 import com.codahale.metrics.health.HealthCheck;
 

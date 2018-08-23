@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.xml.bind.DatatypeConverter;
 
@@ -14,15 +16,20 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jvnet.hk2.annotations.Service;
 
-import de.axxepta.services.interfaces.IDocumentsResourceService;
+import de.axxepta.services.dao.interfaces.IDocumentDAO;
+import de.axxepta.services.interfaces.IDatabaseResourceService;
 import de.axxepta.tools.ValidateURL;
 
-@Service(name = "FilesResourceImplementation")
+@Service(name = "DatabaseBaseXServiceImplementation")
 @Singleton
-public class DocumentsResourceServiceImpl implements IDocumentsResourceService {
+public class DatabaseResourceServiceImpl implements IDatabaseResourceService {
 
-	private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
+	private static final Logger LOG = Logger.getLogger(DatabaseResourceServiceImpl.class);
 
+	@Inject
+	@Named("BaseXDao")
+	private IDocumentDAO documentDAO;
+	
 	@Override
 	public boolean uploadFile(URL fileURL, String fileRef) {
 		if (ValidateURL.validateURL.isURLValid(fileURL.toString())) {
@@ -56,25 +63,43 @@ public class DocumentsResourceServiceImpl implements IDocumentsResourceService {
 
 	@Override
 	public boolean existFileStored(String fileName) {
-		// TODO Auto-generated method stub
+		
 		return false;
 	}
 
 	@Override
 	public char[] readingFile(String fileName) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public List<String> listFiles() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public boolean deleteFile(String fileName) {
-		// TODO Auto-generated method stub
+		
 		return false;
 	}
+	
+	@Override
+	public boolean testDB(String resourceName) {
+		LOG.info("test resource " + resourceName);
+		return documentDAO.test(resourceName);
+	}
+
+	@Override
+	public String showDatabases() {
+		return documentDAO.showDatabases();
+	}
+
+	@Override
+	public String showInfosDatabase(String databaseName) {
+		return documentDAO.showInfoDatabase(databaseName);
+	}
+	
+	
 }
