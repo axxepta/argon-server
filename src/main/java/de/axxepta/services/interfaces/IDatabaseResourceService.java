@@ -23,7 +23,5 @@ public interface IDatabaseResourceService {
 	
 	public boolean testDB(String resourceName);
 	
-	public String showDatabases();
-	
 	public String showInfosDatabase(String databaseName);
 }

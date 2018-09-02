@@ -92,14 +92,8 @@ public class DatabaseResourceServiceImpl implements IDatabaseResourceService {
 	}
 
 	@Override
-	public String showDatabases() {
-		return documentDAO.showDatabases();
-	}
-
-	@Override
 	public String showInfosDatabase(String databaseName) {
 		return documentDAO.showInfoDatabase(databaseName);
 	}
-	
-	
+
 }

@@ -111,7 +111,7 @@ public class DocumentsResourcesController {
 		}
 
 		timerContext.stop();
-		LOG.info("URL for uploaded file is " + tempFileUpload.getPath() + " was obtained in " + timer.getCount());
+		LOG.info("URL for uploaded file is " + tempFileUpload.getPath() + " was obtained in " + timer.getMeanRate());
 		return Response.ok(fileURL.toString()).build();
 	}
 

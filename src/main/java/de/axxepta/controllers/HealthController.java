@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -54,13 +55,12 @@ public class HealthController {
 
 	@Inject
 	@Named("DatabaseBaseXServiceImplementation")
-	
+
 	private IDatabaseResourceService documentsResourceService;
-	
+
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
-	
-	@Operation(summary = "Simple health check service", description = "Check in a simple way if the application is healthy", 
-			method = "GET", operationId="#2_1")
+
+	@Operation(summary = "Simple health check service", description = "Check in a simple way if the application is healthy", method = "GET", operationId = "#2_1")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "aplication is healthy"),
 			@ApiResponse(responseCode = "409", description = "check healthy internal error") })
 	@GET
@@ -87,8 +87,7 @@ public class HealthController {
 		}
 	}
 
-	@Operation(summary = "Execution statistics", description = "Provide execution statistics", 
-			method = "GET", operationId="#2_2")
+	@Operation(summary = "Execution statistics", description = "Provide execution statistics", method = "GET", operationId = "#2_2")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "execution statistics json") })
 	@Path("execution-statistics")
 	@GET
@@ -101,8 +100,7 @@ public class HealthController {
 		return Response.status(Status.OK).entity(executionStatistics).build();
 	}
 
-	@Operation(summary = "Response statistics", description = "Provide response statistics", 
-			method = "GET", operationId="#2_3")
+	@Operation(summary = "Response statistics", description = "Provide response statistics", method = "GET", operationId = "#2_3")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "response statistics json") })
 	@Path("response-statistics")
 	@GET
@@ -114,50 +112,83 @@ public class HealthController {
 		return Response.status(Status.OK).entity(responseStatistics).build();
 	}
 
-	@Operation(summary = "Resource statistics", description = "Provide resource statistics", 
-			method = "GET", operationId="#2_4")
+	@Operation(summary = "URI statistics", description = "Provide uri statistics", method = "GET", operationId = "#2_4")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "resource statistics") })
-	@Path("resource-statistics")
+	@Path("uri-statistics")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resourceStatistics() {
 		metricRegistry.mark();
 		MonitoringStatistics monitorFrame = monitoringStatistics.get();
 		Map<String, ResourceStatistics> mapResourceStatistics = monitorFrame.getUriStatistics();
-
-		return Response.status(Status.OK).entity(mapResourceStatistics).build();
+		if(mapResourceStatistics.isEmpty()) {
+			return Response.status(Status.OK).entity(new HashMap <> ().put("resource uri", "")).build();
+		}
+		Map <String, String> mapResponse = new HashMap <> ();
+		for (Map.Entry<String, ResourceStatistics> entry : mapResourceStatistics.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue().getResourceMethodStatistics().keySet().toString();
+			mapResponse.put(key, value);
+		}
+		return Response.status(Status.OK).entity(mapResponse).build();
 	}
 
-	@Operation(summary = "Ping check service", description = "Doing ping", 
-			method = "GET", operationId="#2_5")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "ping service") })
+	@Operation(summary = "Ping check service", description = "Doing ping", method = "GET", operationId = "#2_5")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "application is healtyh"),
+		    @ApiResponse(responseCode = "400", description = "bad request in case of number of checks is small or or unacceptably large"),
+			@ApiResponse(responseCode = "500", description = "application is not healthy") })
 	@Path("ping")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response ping() {
+	public Response ping(@QueryParam("number-checks") int numberChecks) throws ResponseException {
 		metricRegistry.mark();
+		if(numberChecks < 10 || numberChecks > 1000) {
+			LOG.error("Incorrect number of checks");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect number of checks, number of checks must be between 10 and 1000");
+		}
+			
 		RESTAdminPing adminPing = resourceContext.getResource(RESTAdminPing.class);
+		
+		long timeDiff = 0;
+		boolean isHealthy = true;
 		String ping = adminPing.ping();
-		LOG.info("ping =>" + ping);
-		return Response.status(Status.OK).entity("ping =>" + ping).build();
+		for(int i = 0; i <numberChecks; i++) {
+			long start = System.nanoTime();
+			
+			long stop = System.nanoTime();	
+			if (!ping.equals("pinged")) {
+				isHealthy = false;
+				LOG.error(ping + " is not ping");
+				break;
+			}
+			timeDiff += stop - start;
+		}
+		
+		if (isHealthy && timeDiff > numberChecks * 30000) 
+			isHealthy = false;
+		
+		LOG.info("Time for ping request is " + timeDiff);
+		if (isHealthy)
+			return Response.status(Status.OK).entity("Ping request is shows that the application is healthy").build();
+		else
+			return Response.status(Status.INTERNAL_SERVER_ERROR)
+					.entity("Ping request is shows that the application is not healthy").build();
 	}
-	
-	@Operation(summary = "Rest service for report of resources", description = "Retrieve JSON with rest report of resources from oxygen", 
-			method = "GET", operationId="#2_6")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report in JSON") })	
+
+	@Operation(summary = "Rest service for report of resources", description = "Retrieve JSON with rest report of resources from oxygen", method = "GET", operationId = "#2_6")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report in JSON") })
 	@Path("rest-report")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response restReport() {
 		metricRegistry.mark();
-		RESTStatus  restStatus = resourceContext.getResource(RESTStatus.class);
-		Map <String, Object > reportInfo = restStatus.getReportInfo();
+		RESTStatus restStatus = resourceContext.getResource(RESTStatus.class);
+		Map<String, Object> reportInfo = restStatus.getReportInfo();
 		LOG.info("Rest report of resourse");
 		return Response.status(Status.OK).entity(reportInfo).build();
 	}
-	
-	@Operation(summary = "Calculate md5 sum for target", description = "Check in a simple way if the application is healthy", 
-			method = "GET", operationId="#2_7")
+
+	@Operation(summary = "Calculate md5 sum for target", description = "Check in a simple way if the application is healthy", method = "GET", operationId = "#2_7")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "calculation of md5 sum is complete"),
 			@ApiResponse(responseCode = "409", description = "Internal error in md5 sum calculation") })
 	@GET
@@ -169,45 +200,43 @@ public class HealthController {
 			URL url2 = Paths.get("target", "classes").toUri().toURL();
 			String md5Hash1 = CalculateMD5.calcMD5Hash(new File(url1.getPath()));
 			String md5Hash2 = CalculateMD5.calcMD5Hash(new File(url2.getPath()));
-			
-			String messageHash = "Calculate md5 sum for "  + url1.getPath() +  " is obtained " + md5Hash1 + 
-					" and for " + url2 + " is obtained " + md5Hash2;
-			
-			LOG.info(messageHash); 
-			
+
+			String messageHash = "Calculate md5 sum for " + url1.getPath() + " is obtained " + md5Hash1 + " and for "
+					+ url2 + " is obtained " + md5Hash2;
+
+			LOG.info(messageHash);
+
 			metricRegistry.mark();
-			
-			return Response.ok(messageHash).build();			
-			
+
+			return Response.ok(messageHash).build();
+
 		} catch (IOException e) {
 			LOG.error("Error in md5 calculation " + e.getMessage());
 			throw new ResponseException(Response.Status.CONFLICT.getStatusCode(),
 					"Check checksum error: " + e.getMessage());
-		} 
+		}
 	}
-	
-	@Operation(summary = "Check security", description = "Response if security is enabled or not", 
-			method = "GET", operationId="#2_8")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report if security is enabled") })	
+
+	@Operation(summary = "Check security", description = "Response if security is enabled or not", method = "GET", operationId = "#2_8")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report if security is enabled") })
 	@Path("check-security")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response checkSecurity() {
 		metricRegistry.mark();
 		String response = null;
-		if(SecurityUtil.isSecurityEnabled()) 
+		if (SecurityUtil.isSecurityEnabled())
 			response = "Securiy enabled";
 		else
 			response = " Security is not enbled";
 		LOG.info(response);
 		return Response.status(Status.OK).entity(response).build();
-		
+
 	}
-	
-	@Operation(summary = "Check database", description = "Check if xbase resource is functional", 
-			method = "GET", operationId="#2_9")
-	@ApiResponses({@ApiResponse(responseCode = "200", description = "report if dabase is functional"), 
-		@ApiResponse(responseCode = "400", description = "error in transmited resource name in get request")})	
+
+	@Operation(summary = "Check database", description = "Check if xbase resource is functional", method = "GET", operationId = "#2_9")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "report if dabase is functional"),
+			@ApiResponse(responseCode = "400", description = "error in transmited resource name in get request") })
 	@Path("check-database")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
@@ -219,12 +248,12 @@ public class HealthController {
 					"Value transmited for name of resource is incorrect");
 		}
 		String response;
-		if(documentsResourceService.testDB(resourceName)) 
+		if (documentsResourceService.testDB(resourceName))
 			response = "Connection with database can be done";
 		else
 			response = "Error in connection with database";
 		LOG.info(response);
 		return Response.status(Status.OK).entity(response).build();
-		
+
 	}
 }

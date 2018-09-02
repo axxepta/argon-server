@@ -1,6 +1,9 @@
 package de.axxepta.dao.implementations;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Singleton;
@@ -24,9 +27,9 @@ import de.axxepta.services.dao.interfaces.IDocumentDAO;
 
 @Service(name = "BaseXDao")
 @Singleton
-public class DocumentDAO implements IDocumentDAO {
+public class DocumentDAOImpl implements IDocumentDAO {
 
-	private static final Logger LOG = Logger.getLogger(DocumentDAO.class);
+	private static final Logger LOG = Logger.getLogger(DocumentDAOImpl.class);
 
 	@Context
 	private HttpServletRequest request;
@@ -40,15 +43,17 @@ public class DocumentDAO implements IDocumentDAO {
 	private String baseURL;
 	private String username;
 	private String password;
-	
+
 	@PostConstruct
 	public void initConnection() {
 		scheme = request.getScheme();
 		port = request.getLocalPort();
 		baseURL = "argon-server/argon-rest/rest";
-		
+
 		username = "admin";
 		password = "admin";
+
+		runCommands = new RunDirectCommands();
 	}
 
 	@Override
@@ -57,13 +62,23 @@ public class DocumentDAO implements IDocumentDAO {
 	}
 
 	@Override
-	public String showDatabases() {
-		try {
-			return runCommands.showExistingDatabase();
-		} catch (BaseXException e) {
-			LOG.error(e.getMessage());
-			return null;
+	public Map<String, Map<String, String>> showDatabases() {
+
+		Map<String, Map<String, String>> infoDatabasesMap = new HashMap<>();
+		String[] arrayDatabases = runCommands.listDatabases();
+
+		for (String nameDatabase : arrayDatabases) {
+			 Map<String, String> info;
+			try {
+				info = runCommands.getDatabaseInfo(nameDatabase);
+			} catch (BaseXException e) {
+				LOG.error("Exception for database with name " + nameDatabase + " : " + e.getMessage());
+				continue;
+			}
+			 infoDatabasesMap.put(nameDatabase, info);
 		}
+
+		return infoDatabasesMap;
 	}
 
 	@Override
@@ -86,7 +101,7 @@ public class DocumentDAO implements IDocumentDAO {
 		client = ClientBuilder.newClient(clientConfig);
 		String urlBaseX = composeURL(resource);
 		WebTarget webTarget = client.target(urlBaseX);
-		
+
 		if (webTarget == null) {
 			LOG.error("HTTP URL connection is null");
 			return false;
@@ -107,15 +122,7 @@ public class DocumentDAO implements IDocumentDAO {
 			return true;
 		else
 			return false;
-		
-	}
 
-	public void setMethod(Method method) {
-		LOG.info("Set method " + method.toString());
-		/*
-		 * try { httpURLConnection.setRequestMethod(method.toString()); } catch
-		 * (ProtocolException e) { LOG.error(e.getMessage()); }
-		 */
 	}
 
 	@Override
@@ -167,12 +174,12 @@ public class DocumentDAO implements IDocumentDAO {
 	}
 
 	private String composeURL(String resourceDatabase) {
-		return scheme + "://localhost" + ':' + port + '/' + baseURL + '/' + resourceDatabase;		
+		return scheme + "://localhost" + ':' + port + '/' + baseURL + '/' + resourceDatabase;
 	}
-	
+
 	@PreDestroy
 	public void closeConnections() {
 		runCommands.closeContext();
 	}
-	
+
 }

@@ -28,7 +28,7 @@ import jetbrains.exodus.env.TransactionalExecutable;
 
 import static jetbrains.exodus.env.StoreConfig.WITHOUT_DUPLICATES;
 
-public class SessionDAOImpl extends CachingSessionDAO {
+public class SessionCacheDAOImpl extends CachingSessionDAO {
 
 	public static final String STORE_SESSIONS_PATH_DB = System.getProperty("user.home") + File.separator
 			+ ".store-sessions";
@@ -36,7 +36,7 @@ public class SessionDAOImpl extends CachingSessionDAO {
 
 	private final Store storeSession = env.computeInTransaction(txn -> env.openStore("Sessions", WITHOUT_DUPLICATES, txn));
 
-	private static final Logger LOG = Logger.getLogger(SessionDAOImpl.class);
+	private static final Logger LOG = Logger.getLogger(SessionCacheDAOImpl.class);
 
 	private static final String KEY_ENCRYPT = "Argon Server KEY";
 

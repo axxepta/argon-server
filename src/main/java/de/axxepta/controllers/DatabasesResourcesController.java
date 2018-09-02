@@ -1,5 +1,7 @@
 package de.axxepta.controllers;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.DELETE;
@@ -35,21 +37,17 @@ public class DatabasesResourcesController {
 	private IDocumentDAO documentDAO;
 
 	@Operation(summary = "Show databases", description = "Show existing databse on BaseX server", method = "GET", operationId = "#7_1")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "databases names"),
-			@ApiResponse(responseCode = "409", description = "error internal on server") })
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "databases names"))
 	@GET
 	@Path("show-databases")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response showDatabases() {
 		metricRegistry.mark();
 		LOG.info("show databases service");
-
-		String infos = documentDAO.showDatabases();
-
-		if (infos == null) {
-			return Response.status(Status.CONFLICT).entity("Internal error in showing databases").build();
-		}
-		return Response.status(Status.OK).entity("Existing databases " + infos).build();
+		
+		Map<String, Map<String , String>> infoDatabases = documentDAO.showDatabases();
+			
+		return Response.status(Status.OK).entity(infoDatabases).build();
 	}
 
 	@Operation(summary = "Show database infos", description = "Show infos about database existing on BaseX server", method = "GET", operationId = "#7_2")
@@ -66,6 +64,9 @@ public class DatabasesResourcesController {
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
 					"Value transmited for database name is incorrect");
 		}
+		
+		databaseName = databaseName.trim();
+		
 		LOG.info("show info for database " + databaseName);
 
 		String infos = documentDAO.showInfoDatabase(databaseName);
@@ -81,7 +82,7 @@ public class DatabasesResourcesController {
 	@Operation(summary = "Delete database", description = "Drop an databsse", method = "DELETE", operationId = "#7_3")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "delete database"),
 			@ApiResponse(responseCode = "204", description = "innexistent database"),
-			@ApiResponse(responseCode = "204", description = "name of database is incorrect")})
+			@ApiResponse(responseCode = "400", description = "name of database is incorrect")})
 	@DELETE
 	@Path("delete-database")
 	@Produces(MediaType.TEXT_PLAIN)

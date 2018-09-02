@@ -482,7 +482,7 @@
 						</webApp>
 
 						<jettyXml>webapp/WEB-INF/jetty.xml</jettyXml>
-
+						
 						<connectors>
 							<connector
 								implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
@@ -508,7 +508,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>3.2.1</version>
-
 
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
