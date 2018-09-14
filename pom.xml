@@ -16,12 +16,12 @@
 		<compileSource>10</compileSource>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<jettyVersion>9.4.10.v20180503</jettyVersion>
+		<jettyVersion>9.4.12.v20180830</jettyVersion>
 		<baseXVersion>9.0</baseXVersion>
 		<saxonVersion>9.6.0-6</saxonVersion>
 		<metrics.version>4.0.2</metrics.version>
 
-		<oxygen.sdk.version>20.1.0.1</oxygen.sdk.version>
+		<oxygen.sdk.version>20.1.0.2</oxygen.sdk.version>
 		<jersey.version>2.27</jersey.version>
 		<hk2.version>2.5.0-b61</hk2.version>
 		<swagger.version>2.0.2</swagger.version>
@@ -345,6 +345,18 @@
 			<artifactId>servicemix-core</artifactId>
 			<version>3.4.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-ehcache</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -465,24 +477,21 @@
 					<version>${jettyVersion}</version>
 
 					<configuration>
+						<webAppConfig
+							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
 
-						<webApp>
-							<contextPath>/${project.artifactId}</contextPath>
 							<baseResource
 								implementation="org.eclipse.jetty.util.resource.ResourceCollection">
-								<resourcesAsCSV>/${project.artifactId}/app</resourcesAsCSV>
+								<resourcesAsCSV>/${project.artifactId}</resourcesAsCSV>
 							</baseResource>
 							<descriptor>/${project.artifactId}/WEB-INF/web.xml</descriptor>
-
+							<contextPath>/${project.artifactId}</contextPath>
 							<overrideDescriptor>${project.basedir}/webapp/WEB-INF/web.xml</overrideDescriptor>
-
 							<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 							<containerIncludeJarPattern>^$</containerIncludeJarPattern>
-
-						</webApp>
-
+						</webAppConfig>
 						<jettyXml>webapp/WEB-INF/jetty.xml</jettyXml>
-						
+
 						<connectors>
 							<connector
 								implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">

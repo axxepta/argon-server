@@ -121,9 +121,6 @@ public class HealthController {
 		metricRegistry.mark();
 		MonitoringStatistics monitorFrame = monitoringStatistics.get();
 		Map<String, ResourceStatistics> mapResourceStatistics = monitorFrame.getUriStatistics();
-		if(mapResourceStatistics.isEmpty()) {
-			return Response.status(Status.OK).entity(new HashMap <> ().put("resource uri", "")).build();
-		}
 		Map <String, String> mapResponse = new HashMap <> ();
 		for (Map.Entry<String, ResourceStatistics> entry : mapResourceStatistics.entrySet()) {
 			String key = entry.getKey();

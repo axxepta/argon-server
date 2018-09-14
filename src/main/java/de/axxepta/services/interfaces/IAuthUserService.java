@@ -13,7 +13,7 @@ public interface IAuthUserService {
 	
 	public Boolean hasRoleActualUser(String role);
 	
-	public String resetPasswordActualLoginUser();
+	public String changePasswordActualLoginUser(String password);
 	
 	public boolean logout();
 }

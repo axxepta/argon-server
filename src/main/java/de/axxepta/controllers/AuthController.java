@@ -10,23 +10,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.web.env.EnvironmentLoader;
-import org.apache.shiro.web.env.IniWebEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
 import com.codahale.metrics.Meter;
@@ -36,7 +30,6 @@ import de.axxepta.tools.ValidationString;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import ro.sync.auth.PropertiesRealmWithDefaultUsersFile;
 import de.axxepta.exceptions.ResponseException;
 import de.axxepta.listeners.RegisterMetricsListener;
 import de.axxepta.models.UserAuthModel;
@@ -56,23 +49,14 @@ public class AuthController {
 	private IAuthUserService userService;
 
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
-
-	@Context
-	private HttpServletRequest httpServletRequest;
-
+	
+	
 	@PostConstruct
-	public void init()
+	private void init()
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, UnsupportedEncodingException {
 
 		LOG.info("initialization for auth controller");
 
-		IniWebEnvironment environment = (IniWebEnvironment) httpServletRequest.getServletContext()
-				.getAttribute(EnvironmentLoader.ENVIRONMENT_ATTRIBUTE_KEY);
-		PropertiesRealmWithDefaultUsersFile realm = (PropertiesRealmWithDefaultUsersFile) environment
-				.getObject("usersFileRealm", PropertiesRealmWithDefaultUsersFile.class);
-		DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
-		SecurityUtils.setSecurityManager(securityManager);
-		
 		encrypt = new EncryptAES(KEY);
 	}
 
@@ -84,7 +68,7 @@ public class AuthController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@POST
-	public Response registryUser(UserAuthModel user) throws ResponseException {
+	public Response registryUser(final UserAuthModel user) throws ResponseException {
 
 		LOG.info("registry service ");
 
@@ -135,7 +119,7 @@ public class AuthController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@POST
-	public Response loginUser(UserAuthModel user) throws ResponseException {
+	public Response loginUser(final UserAuthModel user) throws ResponseException {
 
 		LOG.info("registry service ");
 		
@@ -177,7 +161,29 @@ public class AuthController {
 		}
 	}
 
-	@Operation(summary = "Get username", description = "Get username uf user from actual session", method = "GET", operationId = "#5_3")
+	@Operation(summary = "Change password", description = "Change password of current user", method = "GET", operationId = "#5_3")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "change password of an existent user for the session"),
+			@ApiResponse(responseCode = "202", description = "no user logged") })
+	@Path("change-password")
+	@POST
+	public Response changePasswordUser(@QueryParam("password") final String password) {
+		metricRegistry.mark();
+		
+		if(password == null || password.isEmpty())
+			LOG.info("not password request");
+		else
+			LOG.info("new password " + password);
+		
+		String newPassword = userService.changePasswordActualLoginUser(password);
+		if (newPassword != null) {
+			return Response.status(Status.OK).entity("Password changed with " + newPassword).build();
+		} else {
+			return Response.status(Status.ACCEPTED).entity("No user logged").build();
+		}
+	}
+	
+	@Operation(summary = "Get username", description = "Get username uf user from actual session", method = "GET", operationId = "#5_4")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "get username of an existent user for the session"),
 			@ApiResponse(responseCode = "202", description = "no user logged") })
@@ -195,14 +201,14 @@ public class AuthController {
 		}
 	}
 
-	@Operation(summary = "Check if have an role", description = "Check if that actual user have that role", method = "GET", operationId = "#5_4")
+	@Operation(summary = "Check if logged user have an role", description = "Check if that logged user have the role specified", method = "GET", operationId = "#5_5")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "user have or not searched role name"),
 			@ApiResponse(responseCode = "400", description = "role name cannot be validated because is tranmissed incorectly"),
-			@ApiResponse(responseCode = "409", description = "subject cannot be obtained") })
+			@ApiResponse(responseCode = "409", description = "no user is logged") })
 	@GET
 	@Path("check-role")
-	public Response hasRoleActualUser(@QueryParam("checked-role")String role) throws ResponseException {
+	public Response hasRoleActualUser(@QueryParam("checked-role")final String role) throws ResponseException {
 		if (!ValidationString.validationString(role, "role")) {
 			LOG.error("Value transmited for username is incorrect");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -211,7 +217,7 @@ public class AuthController {
 		Boolean result = userService.hasRoleActualUser(role);
 		metricRegistry.mark();
 		if(result == null){
-			return Response.status(Status.CONFLICT).entity("No role name can be given").build();
+			return Response.status(Status.CONFLICT).entity("No user is logged").build();
 		}
 		if (result) {
 			return Response.status(Status.OK).entity("Logged user have " + role + " role").build();
@@ -220,10 +226,9 @@ public class AuthController {
 		}
 	}
 	
-	@Operation(summary = "Logout", description = "Logout user session", method = "POST", operationId = "#5_5")
+	@Operation(summary = "Logout", description = "Logout user session", method = "POST", operationId = "#5_6")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "logout"),
 			@ApiResponse(responseCode = "202", description = "no user logged") })
-
 	@Path("log-out")
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST

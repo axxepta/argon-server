@@ -20,13 +20,9 @@ public interface IDocumentDAO {
 	
 	public boolean test(String resourceName);
 	
-	public byte [] readDocument(String documentName);
+	public byte [] readDocument(String documentName, String databaseName);
 	
-	public boolean uploadDocument(String documentName, byte [] content);
+	public boolean uploadDocument(File file, String databaseName);
 	
-	public boolean renameDocument(String oldDocumentName, String newDocumentName);
-	
-	public boolean updateDocumentContent(String documentName, byte [] newContent);
-	
-	public boolean deleteDocument(String fileName);
+	public boolean deleteDocument(String fileName, String databaseName);
 }

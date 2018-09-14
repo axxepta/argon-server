@@ -30,18 +30,25 @@ import static jetbrains.exodus.env.StoreConfig.WITHOUT_DUPLICATES;
 
 public class SessionCacheDAOImpl extends CachingSessionDAO {
 
-	public static final String STORE_SESSIONS_PATH_DB = System.getProperty("user.home") + File.separator
-			+ ".store-sessions";
-	private final Environment env = Environments.newInstance(STORE_SESSIONS_PATH_DB);
+	public static final String STORE_SESSIONS_PATH_DB = System.getProperty("user.dir") + File.separator + "shiro-res"
+			+ File.separator + ".store-sessions";
 
-	private final Store storeSession = env.computeInTransaction(txn -> env.openStore("Sessions", WITHOUT_DUPLICATES, txn));
+	private final Environment env;
+
+	private final Store storeSession;
 
 	private static final Logger LOG = Logger.getLogger(SessionCacheDAOImpl.class);
 
 	private static final String KEY_ENCRYPT = "Argon Server KEY";
 
 	private Session session;
-	
+
+	public SessionCacheDAOImpl() {
+		env = Environments.newInstance(STORE_SESSIONS_PATH_DB);
+		storeSession = env.computeInTransaction(txn -> env.openStore("Sessions", WITHOUT_DUPLICATES, txn));
+		LOG.info("Create session DAO object");
+	}
+
 	@Override
 	protected void doUpdate(Session session) {
 		Serializable sessionId = generateSessionId(session);
@@ -53,10 +60,11 @@ public class SessionCacheDAOImpl extends CachingSessionDAO {
 			final ByteIterable value = StringBinding
 					.stringToEntry(new String(SerializeObjectUtil.serialize(session, KEY_ENCRYPT)));
 			env.executeInTransaction((txn) -> {
-				if(storeSession.get(txn, key) == null)
+				if (storeSession.get(txn, key) == null)
 					return;
 				storeSession.put(txn, key, value);
 			});
+			LOG.info("Update session with id " + session.getId());
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
 				| BadPaddingException | IOException e) {
 			LOG.error(e.getMessage());
@@ -68,13 +76,14 @@ public class SessionCacheDAOImpl extends CachingSessionDAO {
 		Serializable sessionId = generateSessionId(session);
 		@NotNull
 		final ByteIterable key = StringBinding.stringToEntry(sessionId.toString());
-		
+
 		env.executeInTransaction((txn) -> {
 			boolean isDel = storeSession.delete(txn, key);
-			if(!isDel) {
+			if (!isDel) {
 				LOG.error("Session with id " + sessionId + " cannot be deleted");
 			}
 		});
+		LOG.info("Delete session with id " + session.getId());
 	}
 
 	@Override
@@ -90,6 +99,7 @@ public class SessionCacheDAOImpl extends CachingSessionDAO {
 			env.executeInTransaction((txn) -> {
 				storeSession.put(txn, key, value);
 			});
+			LOG.info("Create session with id " + session.getId());
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
 				| BadPaddingException | IOException e) {
 			LOG.error(e.getMessage());
@@ -100,25 +110,25 @@ public class SessionCacheDAOImpl extends CachingSessionDAO {
 
 	@Override
 	protected Session doReadSession(Serializable sessionId) {
-		
-		
 		@NotNull
-		final ByteIterable key = StringBinding.stringToEntry(sessionId.toString()); 
+		final ByteIterable key = StringBinding.stringToEntry(sessionId.toString());
 		env.executeInTransaction(new TransactionalExecutable() {
 			@Override
 			public void execute(@NotNull final Transaction txn) {
 				final ByteIterable entry = storeSession.get(txn, key);
-				byte[] array = CompressedUnsignedLongArrayByteIterable.readIterator(entry.iterator(), entry.getLength());
-				
+				byte[] array = CompressedUnsignedLongArrayByteIterable.readIterator(entry.iterator(),
+						entry.getLength());
+
 				try {
 					session = (Session) SerializeObjectUtil.deserialize(array, KEY_ENCRYPT);
+					LOG.info("Session with id " + sessionId + " was read");
 				} catch (InvalidKeyException | ClassNotFoundException | NoSuchAlgorithmException
 						| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | IOException e) {
-					
+					LOG.error(e.getMessage());
 				}
 			}
 		});
-		
+
 		return session;
 	}
 

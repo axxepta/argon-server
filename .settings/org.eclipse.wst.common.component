@@ -9,7 +9,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
                 
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
-        <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/com/oxygenxml/oxygen-webapp/20.1.0.1/oxygen-webapp-20.1.0.1.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=WEB-INF/classes/ro/sync;WEB-INF/frameworks.zip;WEB-INF/options.zip;WEB-INF/plugins.zip;WEB-INF/lib/">
+        <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/com/oxygenxml/oxygen-webapp/20.1.0.2/oxygen-webapp-20.1.0.2.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=WEB-INF/classes/ro/sync;WEB-INF/frameworks.zip;WEB-INF/options.zip;WEB-INF/plugins.zip;WEB-INF/lib/">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">

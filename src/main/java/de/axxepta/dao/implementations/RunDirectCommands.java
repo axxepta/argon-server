@@ -42,7 +42,6 @@ public class RunDirectCommands {
 	}
 
 	public String showInfoDatabase(String nameDatabase) throws BaseXException {
-
 		new Open(nameDatabase).execute(ctx);
 		String infos = new InfoDB().execute(ctx);
 		LOG.info("show infos about " + nameDatabase + " database");

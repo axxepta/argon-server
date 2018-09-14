@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -15,17 +16,24 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.apache.shiro.cache.CacheManager;
+import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.crypto.hash.format.DefaultHashFormatFactory;
 import org.apache.shiro.crypto.hash.format.HashFormat;
 import org.apache.shiro.crypto.hash.format.Shiro1CryptFormat;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.DefaultSessionManager;
+import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.env.EnvironmentLoader;
 import org.apache.shiro.web.env.IniWebEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
+import de.axxepta.dao.implementations.SessionCacheDAOImpl;
 import de.axxepta.services.interfaces.IAuthUserService;
 import ro.sync.auth.PropertiesRealmWithDefaultUsersFile;
 
@@ -38,18 +46,34 @@ public class AuthUserServiceImpl implements IAuthUserService {
 	@Context
 	private HttpServletRequest request;
 
+	@PostConstruct
+	private void init() {
+		DefaultSecurityManager securityManager = (DefaultSecurityManager) SecurityUtils.getSecurityManager();
+		CacheManager cacheManager = new EhCacheManager();
+		securityManager.setCacheManager(cacheManager);
+		SessionDAO sessionDAO = new SessionCacheDAOImpl();
+		DefaultSessionManager sessionManager = (DefaultSessionManager) securityManager.getSessionManager();
+		sessionManager.setSessionDAO(sessionDAO);
+		sessionManager.setDeleteInvalidSessions(true);
+		sessionManager.setSessionValidationSchedulerEnabled(true);
+		sessionManager.setGlobalSessionTimeout(18000000);// set validity to 30min
+		sessionManager.validateSessions();
+	}
+
 	@Override
 	public boolean login(String username, String password) {
-		Subject currentUser = SecurityUtils.getSubject();
-		if (!currentUser.isAuthenticated()) {
-			try {
+		Subject subject = SecurityUtils.getSubject();
 
-				currentUser.login(new UsernamePasswordToken(username, password, true));
+		if (!subject.isAuthenticated()) {
+			try {
+				subject.login(new UsernamePasswordToken(username, password, true));
 				LOG.info("Login user with username " + username);
 				return true;
 			} catch (AuthenticationException e) {
+				LOG.error(e.getMessage());
 			}
 		}
+
 		return false;
 	}
 
@@ -57,8 +81,8 @@ public class AuthUserServiceImpl implements IAuthUserService {
 	public boolean register(String username, String password) {
 		IniWebEnvironment environment = (IniWebEnvironment) request.getServletContext()
 				.getAttribute(EnvironmentLoader.ENVIRONMENT_ATTRIBUTE_KEY);
-		PropertiesRealmWithDefaultUsersFile realm = (PropertiesRealmWithDefaultUsersFile) environment
-				.getObject("usersFileRealm", PropertiesRealmWithDefaultUsersFile.class);
+		PropertiesRealmWithDefaultUsersFile realm = (PropertiesRealmWithDefaultUsersFile) environment.getObject("usersFileRealm",
+				PropertiesRealmWithDefaultUsersFile.class);
 		File configFile = new File(realm.getResourcePath().substring("file:".length()));
 		String hashedPassword = hashPassword(password);
 
@@ -67,7 +91,7 @@ public class AuthUserServiceImpl implements IAuthUserService {
 		properties.setProperty("role.admin", "*");
 		try (FileOutputStream fos = new FileOutputStream(configFile);) {
 
-			String comments = "Defining the admin user.\n   user.USERNAME = PASSWORD,ROLE";
+			String comments = "Admin user from rest services";
 
 			properties.store(fos, comments);
 
@@ -82,35 +106,48 @@ public class AuthUserServiceImpl implements IAuthUserService {
 
 	@Override
 	public String getActualUsername() {
-		String currentUsername = request.getRemoteUser();
-		LOG.info("Actual user have username " + currentUsername);
-		return currentUsername;
+		Subject subject = SecurityUtils.getSubject();
+		Session session = subject.getSession();
+		LOG.info("Originally from " + session.getHost() + " have key " + session.getId().toString());
+		if (subject.isAuthenticated()) {
+			String currentUsername = request.getRemoteUser();
+			LOG.info("Actual user have username " + currentUsername);
+			return currentUsername;
+		}
+		return null;
 	}
 
 	@Override
 	public Boolean hasRoleActualUser(String role) {
-		Subject currentUser = SecurityUtils.getSubject();
-		if (!currentUser.isAuthenticated()) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
 			LOG.info("not exist a current user authenticated");
 			return null;
 		}
-		LOG.info("Check role " + role + " for user with username " + currentUser.getSession().getAttribute("username"));
-		return currentUser.hasRole(role);
+		LOG.info("Check role " + role + " for user with username " + subject.getSession().getAttribute("username"));
+		return subject.hasRole(role);
 	}
 
 	@RequiresUser
-	public String resetPasswordActualLoginUser() {
-		Subject currentUser = SecurityUtils.getSubject();
-		if (!currentUser.isAuthenticated()) {
+	public String changePasswordActualLoginUser(String password) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
 			LOG.info("not exist a current user authenticated");
 			return null;
 		}
-		String generatedPassword = generateString(15, 'A', 'z');
-		String currentUsername = (String) currentUser.getSession().getAttribute("username");
-		
-	
+		if (password == null || password.isEmpty())
+			password = generateString(15, 'A', 'z');
+		String currentUsername = request.getRemoteUser();
 
-		return generatedPassword;
+		LOG.info("User have username " + currentUsername + " change password to " + password);
+
+		UsernamePasswordToken token = new UsernamePasswordToken(currentUsername, password);
+		token.setRememberMe(true);
+		subject.logout();
+		register(new String(token.getUsername()), new String(token.getPassword()));
+		subject.login(token);
+
+		return password;
 	}
 
 	@Override
@@ -121,7 +158,7 @@ public class AuthUserServiceImpl implements IAuthUserService {
 			return false;
 		}
 		subject.logout();
-		LOG.info("Logout user with username " + getActualUsername());
+		LOG.info("Logout user ");
 		return true;
 	}
 
@@ -139,5 +176,4 @@ public class AuthUserServiceImpl implements IAuthUserService {
 		return rand.ints(size, firstChar, lastChar + 1).mapToObj((ch) -> (char) ch)
 				.collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
 	}
-
 }

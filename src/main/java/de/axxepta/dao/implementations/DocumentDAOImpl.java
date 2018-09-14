@@ -126,27 +126,17 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public byte[] readDocument(String documentName) {
+	public byte[] readDocument(String documentName, String database) {
 		return null;
 	}
 
 	@Override
-	public boolean uploadDocument(String documentName, byte[] content) {
+	public boolean uploadDocument(File file, String database) {
 		return false;
 	}
 
 	@Override
-	public boolean renameDocument(String oldDocumentName, String newDocumentName) {
-		return false;
-	}
-
-	@Override
-	public boolean updateDocumentContent(String documentName, byte[] newContent) {
-		return false;
-	}
-
-	@Override
-	public boolean deleteDocument(String fileName) {
+	public boolean deleteDocument(String fileName, String databaseName) {
 		return false;
 
 	}
