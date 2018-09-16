@@ -14,9 +14,9 @@ public interface IDocumentDAO {
 	
 	public String showInfoDatabase(String databaseName);
 	
-	public boolean createDatabase(File file);
+	public Boolean createDatabase(String databaseName, String fileURL);
 	
-	public boolean dropDatabase(String databaseName);
+	public Boolean dropDatabase(String databaseName);
 	
 	public boolean test(String resourceName);
 	
@@ -25,4 +25,5 @@ public interface IDocumentDAO {
 	public boolean uploadDocument(File file, String databaseName);
 	
 	public boolean deleteDocument(String fileName, String databaseName);
+
 }

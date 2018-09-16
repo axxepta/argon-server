@@ -36,9 +36,14 @@ public class RunDirectCommands {
 		return infoSessions;
 	}
 
-	public void createDatabase(File file) throws BaseXException {
-		new CreateDB(file.getName(), file.getPath()).execute(ctx);
-		LOG.info("Create database " + file.getName());
+	public void createDatabase(String databaseName, File file) throws BaseXException {
+		if (file == null) {
+			new CreateDB(databaseName).execute(ctx);
+			LOG.info("Create empty database with name " + databaseName);
+		} else {
+			new CreateDB(databaseName, file.getAbsolutePath()).execute(ctx);
+			LOG.info("Create database that contain file from " + file.getAbsolutePath());
+		}
 	}
 
 	public String showInfoDatabase(String nameDatabase) throws BaseXException {
@@ -94,9 +99,16 @@ public class RunDirectCommands {
 	public String[] listDatabases() {
 		Databases databases = ctx.databases;
 		StringList list = databases.list();
-		String [] namesDatabaseArray = list.toArray();
+		String[] namesDatabaseArray = list.toArray();
 		LOG.info("name databases " + Arrays.toString(namesDatabaseArray));
 		return namesDatabaseArray;
+	}
+
+	public boolean existDatabase(String databaseName) {
+		List<String> databaseNameList = Arrays.asList(listDatabases());
+		if (databaseNameList.contains(databaseName))
+			return true;
+		return false;
 	}
 
 	public Map<String, String> getDatabaseInfo(String nameDatabase) throws BaseXException {

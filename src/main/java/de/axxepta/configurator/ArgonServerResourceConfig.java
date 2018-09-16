@@ -27,7 +27,6 @@ public class ArgonServerResourceConfig extends ResourceConfig {
 		OpenApiResource openApiResource = new OpenApiResource();
         register(openApiResource);
         
-		SLF4JBridgeHandler.install();		
+		SLF4JBridgeHandler.install();
 	}
-
 }

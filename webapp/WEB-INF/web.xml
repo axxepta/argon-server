@@ -113,10 +113,6 @@
 		<url-pattern>/pim/static/*</url-pattern>
 	</servlet-mapping>
 
-	<listener>
-		<listener-class>de.axxepta.listeners.RegisterMetricsListener</listener-class>
-	</listener>
-
 	<servlet>
 		<servlet-name>metrics</servlet-name>
 		<servlet-class>com.codahale.metrics.servlets.AdminServlet</servlet-class>

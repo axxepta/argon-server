@@ -219,7 +219,7 @@ public class FileResourceServiceImpl implements IFileResourceService {
 				LOG.error("Temp file cannot be created " + e.getMessage());
 				return null;
 			}
-			;
+			
 			startCopy = System.nanoTime();
 			try {
 				FileUtils.copyURLToFile(fileURL, fileUpload);

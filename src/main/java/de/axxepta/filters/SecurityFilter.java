@@ -24,17 +24,25 @@ public class SecurityFilter extends CsrfFilter {
 
 	private static final Logger LOG = Logger.getLogger(SecurityFilter.class);
 
-	private Map<String, List<String>> mapServicesAcceptedIP;
+	private Map<String, Map<String, List<String>>> mapServicesAcceptedIP;
 
 	@PostConstruct
 	public void loadRules() {
 		LOG.info("load rules for security filter");
 		mapServicesAcceptedIP = new HashMap<>();
+
+		Map<String, List<String>> mapMethodsIPUnrestrained = new HashMap<>();
+		mapMethodsIPUnrestrained.put("POST", null);
+
 		List<String> restricted = new ArrayList<>();
 		restricted.add("127.0.0.1");
-		mapServicesAcceptedIP.put("auth-services", null);
-		mapServicesAcceptedIP.put("document-services", null);
-		mapServicesAcceptedIP.put("database-services", restricted);
+		Map<String, List<String>> mapMethodsIPRestricted = new HashMap<>();
+		mapMethodsIPRestricted.put("POST", restricted);
+		mapMethodsIPRestricted.put("DELETE", restricted);
+
+		mapServicesAcceptedIP.put("auth-services", mapMethodsIPUnrestrained);
+		mapServicesAcceptedIP.put("document-services", mapMethodsIPUnrestrained);
+		mapServicesAcceptedIP.put("databases-services", mapMethodsIPRestricted);
 	}
 
 	@Override
@@ -45,28 +53,35 @@ public class SecurityFilter extends CsrfFilter {
 		String ip = request.getRemoteAddr();
 		LOG.info("Path request " + pathInfo + " from IP " + ip);
 
-		if (pathInfo != null && ((HttpServletRequest) request).getMethod().equalsIgnoreCase("POST")) {
-			for (Map.Entry<String, List<String>> entry : mapServicesAcceptedIP.entrySet()) {
-				if (pathInfo.contains(entry.getKey())) {
-					List<String> restrictedIPList = entry.getValue();
+		if (pathInfo != null) {
+			for (Map.Entry<String, Map<String, List<String>>> entry : mapServicesAcceptedIP.entrySet()) {
+				String nameService = entry.getKey();
+				Map<String, List<String>> mapMethodsIpRestrictions = entry.getValue();
 
-					if (restrictedIPList == null) {
-						String generateRedirectUrl = "/services" + pathInfo;
-
-						RequestDispatcher dispatcher = request.getRequestDispatcher(generateRedirectUrl);
-						dispatcher.forward(request, response);
-						return;
-					}
-					else {
-						for(String ipElem : restrictedIPList) {
-							if(ip.equals(ipElem)) {
+				if (pathInfo.contains(nameService)) {
+					for (Map.Entry<String, List<String>> entryMethodsRestrictions : mapMethodsIpRestrictions.entrySet()) {
+						String method = entryMethodsRestrictions.getKey();
+						if(((HttpServletRequest) request).getMethod().equalsIgnoreCase(method)) {
+							List<String> restrictedIPList = entryMethodsRestrictions.getValue();
+							if (restrictedIPList == null) {
 								String generateRedirectUrl = "/services" + pathInfo;
 
 								RequestDispatcher dispatcher = request.getRequestDispatcher(generateRedirectUrl);
 								dispatcher.forward(request, response);
 								return;
+							} else {
+								for (String ipElem : restrictedIPList) {
+									if (ip.equals(ipElem)) {
+
+										String generateRedirectUrl = "/services" + pathInfo;
+
+										RequestDispatcher dispatcher = request.getRequestDispatcher(generateRedirectUrl);
+										dispatcher.forward(request, response);
+										return;
+									}
+								}
 							}
-						}
+						}					
 					}
 				}
 			}

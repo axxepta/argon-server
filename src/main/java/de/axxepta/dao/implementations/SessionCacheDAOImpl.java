@@ -116,6 +116,10 @@ public class SessionCacheDAOImpl extends CachingSessionDAO {
 			@Override
 			public void execute(@NotNull final Transaction txn) {
 				final ByteIterable entry = storeSession.get(txn, key);
+				
+				if(entry == null)
+					LOG.error("Entry is null");
+				
 				byte[] array = CompressedUnsignedLongArrayByteIterable.readIterator(entry.iterator(),
 						entry.getLength());
 

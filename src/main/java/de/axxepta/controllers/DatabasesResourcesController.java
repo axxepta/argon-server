@@ -4,8 +4,11 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -36,24 +39,24 @@ public class DatabasesResourcesController {
 	@Named("BaseXDao")
 	private IDocumentDAO documentDAO;
 
-	@Operation(summary = "Show databases", description = "Show existing databse on BaseX server", method = "GET", operationId = "#7_1")
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "databases names"))
+	@Operation(summary = "Show databases", description = "Show existing database on BaseX server", method = "GET", operationId = "#7_1")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "existing database details as JSON"))
 	@GET
 	@Path("show-databases")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response showDatabases() {
 		metricRegistry.mark();
 		LOG.info("show databases service");
-		
-		Map<String, Map<String , String>> infoDatabases = documentDAO.showDatabases();
-			
+
+		Map<String, Map<String, String>> infoDatabases = documentDAO.showDatabases();
+
 		return Response.status(Status.OK).entity(infoDatabases).build();
 	}
 
 	@Operation(summary = "Show database infos", description = "Show infos about database existing on BaseX server", method = "GET", operationId = "#7_2")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "database infos"),
 			@ApiResponse(responseCode = "204", description = "error internal on server"),
-			@ApiResponse(responseCode = "204", description = "name of database is incorrect")})
+			@ApiResponse(responseCode = "204", description = "name of database is incorrect") })
 	@GET
 	@Path("show-infos-database")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -64,9 +67,9 @@ public class DatabasesResourcesController {
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
 					"Value transmited for database name is incorrect");
 		}
-		
+
 		databaseName = databaseName.trim();
-		
+
 		LOG.info("show info for database " + databaseName);
 
 		String infos = documentDAO.showInfoDatabase(databaseName);
@@ -79,10 +82,43 @@ public class DatabasesResourcesController {
 		}
 	}
 
-	@Operation(summary = "Delete database", description = "Drop an databsse", method = "DELETE", operationId = "#7_3")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "delete database"),
-			@ApiResponse(responseCode = "204", description = "innexistent database"),
-			@ApiResponse(responseCode = "400", description = "name of database is incorrect")})
+	@Operation(summary = "Create database", description = "Create a database to which an initial file may be added", method = "POST", operationId = "#7_3")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "create database with success"),
+			@ApiResponse(responseCode = "400", description = "name of database is incorrect"), 
+			@ApiResponse(responseCode = "409", description = "database with that name already exists"),
+			@ApiResponse(responseCode = "500", description = "internal server error")})
+	@POST
+	@Path("create-database")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response createDatabase(@FormParam("database-name") String databaseName,
+			@FormParam("file-url") String fileURL) throws ResponseException {
+		metricRegistry.mark();
+		if (!ValidationString.validationString(databaseName, "databaseName")) {
+			LOG.error("Value transmited for database name is incorrect");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
+					"Value transmited for database name is incorrect");
+		}
+
+		Boolean createDatabaseResponse = documentDAO.createDatabase(databaseName, fileURL);
+
+		if (createDatabaseResponse == null) {
+			return Response.status(Status.CONFLICT).entity("Database with name  " + databaseName + " already exists")
+					.build();
+		}
+		if (createDatabaseResponse) {
+			return Response.status(Status.OK).entity("Database " + databaseName + " was created").build();
+		} else {
+			return Response.status(Status.INTERNAL_SERVER_ERROR)
+					.entity("Creation of database with name " + databaseName + " has encountered an error").build();
+		}
+	}
+
+	@Operation(summary = "Delete database", description = "Drop a database", method = "DELETE", operationId = "#7_4")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "delete database with success"),			
+			@ApiResponse(responseCode = "400", description = "name of database is incorrect"), 
+			@ApiResponse(responseCode = "409", description = "innexistent database"),
+			@ApiResponse(responseCode = "500", description = "internal server error")})
 	@DELETE
 	@Path("delete-database")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -95,14 +131,16 @@ public class DatabasesResourcesController {
 		}
 		LOG.info("delete database " + databaseName);
 
-		boolean result = documentDAO.dropDatabase(databaseName);
-
+		Boolean result = documentDAO.dropDatabase(databaseName);
+		if(result == null) {
+			return Response.status(Status.CONFLICT).entity("Database with name  " + databaseName + " not exists")
+					.build();
+		}
 		if (result) {
 			return Response.status(Status.OK).entity("Database " + databaseName + " was deleted").build();
-			
 		} else {
-			return Response.status(Status.NO_CONTENT).entity("Database with name  " + databaseName + " not exist")
-					.build();
+			return Response.status(Status.INTERNAL_SERVER_ERROR)
+					.entity("Delete of database with name " + databaseName + " has encountered an error").build();
 		}
 	}
 }

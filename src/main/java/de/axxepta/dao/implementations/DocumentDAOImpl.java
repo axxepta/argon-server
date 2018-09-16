@@ -1,6 +1,7 @@
 package de.axxepta.dao.implementations;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.basex.core.BaseXException;
 import org.glassfish.jersey.client.ClientConfig;
@@ -35,8 +37,6 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	private HttpServletRequest request;
 
 	private RunDirectCommands runCommands;
-
-	private Client client;
 
 	private String scheme;
 	private int port;
@@ -68,14 +68,14 @@ public class DocumentDAOImpl implements IDocumentDAO {
 		String[] arrayDatabases = runCommands.listDatabases();
 
 		for (String nameDatabase : arrayDatabases) {
-			 Map<String, String> info;
+			Map<String, String> info;
 			try {
 				info = runCommands.getDatabaseInfo(nameDatabase);
 			} catch (BaseXException e) {
 				LOG.error("Exception for database with name " + nameDatabase + " : " + e.getMessage());
 				continue;
 			}
-			 infoDatabasesMap.put(nameDatabase, info);
+			infoDatabasesMap.put(nameDatabase, info);
 		}
 
 		return infoDatabasesMap;
@@ -83,6 +83,9 @@ public class DocumentDAOImpl implements IDocumentDAO {
 
 	@Override
 	public String showInfoDatabase(String databaseName) {
+		if (!runCommands.existDatabase(databaseName))
+			return null;
+
 		try {
 			return runCommands.showInfoDatabase(databaseName);
 		} catch (BaseXException e) {
@@ -98,7 +101,7 @@ public class DocumentDAOImpl implements IDocumentDAO {
 
 		ClientConfig clientConfig = new ClientConfig();
 		clientConfig.register(feature);
-		client = ClientBuilder.newClient(clientConfig);
+		Client client = ClientBuilder.newClient(clientConfig);
 		String urlBaseX = composeURL(resource);
 		WebTarget webTarget = client.target(urlBaseX);
 
@@ -131,7 +134,27 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public boolean uploadDocument(File file, String database) {
+	public boolean uploadDocument(File file, String databaseName) {
+		if (file == null || !file.exists() || !file.isFile()) {
+			LOG.info("file not exists or is a directory");
+			return false;
+		}
+
+		if (!runCommands.existDatabase(databaseName)) {
+			LOG.info("database with name " + databaseName + " not exists");
+			return false;
+		}
+
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
+				.credentials(username, password).build();
+
+		ClientConfig clientConfig = new ClientConfig();
+		clientConfig.register(feature);
+		Client client = ClientBuilder.newClient(clientConfig);
+		String databaseRESTfulURL = composeURL(databaseName);
+
+		// Files.move(file, to);
+		client.close();
 		return false;
 	}
 
@@ -142,18 +165,38 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public boolean createDatabase(File file) {
+	public Boolean createDatabase(String databaseName, String fileURL) {
+		if (runCommands.existDatabase(databaseName)) {
+			LOG.info("Database with name " + databaseName + " already exists");
+			return null;
+		}
+		File file = null;
+		if (fileURL != null) {
+			String fileName = fileURL.substring(fileURL.lastIndexOf('/') + 1, fileURL.length());
+			String prefixFile = FilenameUtils.removeExtension(fileName);
+			try {
+				file = File.createTempFile(prefixFile, ".tmp");
+			} catch (IOException e) {
+				LOG.error("Temp file cannot be created " + e.getMessage());
+				return null;
+			}
+		}
 		try {
-			runCommands.createDatabase(file);
+			runCommands.createDatabase(databaseName, file);
 		} catch (BaseXException e) {
 			LOG.error(e.getMessage());
+			file.delete();
 			return false;
 		}
+		if (file != null)
+			file.delete();
 		return true;
 	}
 
 	@Override
-	public boolean dropDatabase(String databaseName) {
+	public Boolean dropDatabase(String databaseName) {
+		if (!runCommands.existDatabase(databaseName))
+			return null;
 		try {
 			runCommands.dropDatabase(databaseName);
 		} catch (BaseXException e) {

@@ -3,6 +3,9 @@ package de.axxepta.services.implementations;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -46,20 +49,40 @@ public class AuthUserServiceImpl implements IAuthUserService {
 	@Context
 	private HttpServletRequest request;
 
-	@PostConstruct
-	private void init() {
+	private Map <String , String> tokensMap;
+	
+	public AuthUserServiceImpl() {
+		LOG.info("Startup application from session DAO listener");
 		DefaultSecurityManager securityManager = (DefaultSecurityManager) SecurityUtils.getSecurityManager();
 		CacheManager cacheManager = new EhCacheManager();
 		securityManager.setCacheManager(cacheManager);
-		SessionDAO sessionDAO = new SessionCacheDAOImpl();
+		SessionDAO sessionDAO = new SessionCacheDAOImpl();	
 		DefaultSessionManager sessionManager = (DefaultSessionManager) securityManager.getSessionManager();
 		sessionManager.setSessionDAO(sessionDAO);
 		sessionManager.setDeleteInvalidSessions(true);
 		sessionManager.setSessionValidationSchedulerEnabled(true);
 		sessionManager.setGlobalSessionTimeout(18000000);// set validity to 30min
 		sessionManager.validateSessions();
+		
+		Collection <Session> sessions = sessionManager.getSessionDAO().getActiveSessions();
+		tokensMap = new HashMap <>();
+		for(Session session : sessions) {
+			String username = (String) session.getAttribute("username");
+			String password = (String) session.getAttribute("password");		
+		    tokensMap.put(username,  password);
+		}
 	}
-
+	
+	@PostConstruct
+	private void initAuth() {
+		for(Map.Entry<String, String> entry: tokensMap.entrySet()) {
+			String username = entry.getKey();
+			String password = entry.getValue();
+			if(username != null && password != null) {
+				register(username, password);
+			}
+		}
+	}
 	@Override
 	public boolean login(String username, String password) {
 		Subject subject = SecurityUtils.getSubject();
@@ -97,11 +120,17 @@ public class AuthUserServiceImpl implements IAuthUserService {
 
 			realm.run();
 
-			return true;
+			
 		} catch (IOException e) {
 			LOG.error("Error in registry " + e.getMessage());
 			return false;
 		}
+		
+		Subject subject = SecurityUtils.getSubject();
+		Session session = subject.getSession();
+		session.setAttribute("username", username);
+		session.setAttribute("password", password);
+		return true;
 	}
 
 	@Override
