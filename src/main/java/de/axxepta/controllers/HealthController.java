@@ -36,8 +36,11 @@ import de.axxepta.tools.CalculateMD5;
 import de.axxepta.tools.HealthCheckImpl;
 import de.axxepta.tools.ValidationString;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import ro.sync.exml.workspace.api.PluginWorkspace;
+import ro.sync.exml.workspace.api.PluginWorkspaceProvider;
 import ro.sync.servlet.RESTStatus;
 import ro.sync.servlet.admin.RESTAdminPing;
 import ro.sync.servlet.util.SecurityUtil;
@@ -55,7 +58,6 @@ public class HealthController {
 
 	@Inject
 	@Named("DatabaseBaseXServiceImplementation")
-
 	private IDatabaseResourceService documentsResourceService;
 
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
@@ -121,7 +123,7 @@ public class HealthController {
 		metricRegistry.mark();
 		MonitoringStatistics monitorFrame = monitoringStatistics.get();
 		Map<String, ResourceStatistics> mapResourceStatistics = monitorFrame.getUriStatistics();
-		Map <String, String> mapResponse = new HashMap <> ();
+		Map<String, String> mapResponse = new HashMap<>();
 		for (Map.Entry<String, ResourceStatistics> entry : mapResourceStatistics.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue().getResourceMethodStatistics().keySet().toString();
@@ -132,27 +134,30 @@ public class HealthController {
 
 	@Operation(summary = "Ping check service", description = "Doing ping", method = "GET", operationId = "#2_5")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "application is healtyh"),
-		    @ApiResponse(responseCode = "400", description = "bad request in case of number of checks is small or or unacceptably large"),
+			@ApiResponse(responseCode = "400", description = "bad request in case of number of checks is small or or unacceptably large"),
 			@ApiResponse(responseCode = "500", description = "application is not healthy") })
 	@Path("ping")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response ping(@QueryParam("number-checks") int numberChecks) throws ResponseException {
+	public Response ping(
+			@Parameter(description = "number of checks", required = true) @QueryParam("number-checks") int numberChecks)
+			throws ResponseException {
 		metricRegistry.mark();
-		if(numberChecks < 10 || numberChecks > 1000) {
+		if (numberChecks < 10 || numberChecks > 1000) {
 			LOG.error("Incorrect number of checks");
-			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect number of checks, number of checks must be between 10 and 1000");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
+					"Incorrect number of checks, number of checks must be between 10 and 1000");
 		}
-			
+
 		RESTAdminPing adminPing = resourceContext.getResource(RESTAdminPing.class);
-		
+
 		long timeDiff = 0;
 		boolean isHealthy = true;
 		String ping = adminPing.ping();
-		for(int i = 0; i <numberChecks; i++) {
+		for (int i = 0; i < numberChecks; i++) {
 			long start = System.nanoTime();
-			
-			long stop = System.nanoTime();	
+
+			long stop = System.nanoTime();
 			if (!ping.equals("pinged")) {
 				isHealthy = false;
 				LOG.error(ping + " is not ping");
@@ -160,10 +165,10 @@ public class HealthController {
 			}
 			timeDiff += stop - start;
 		}
-		
-		if (isHealthy && timeDiff > numberChecks * 30000) 
+
+		if (isHealthy && timeDiff > numberChecks * 30000)
 			isHealthy = false;
-		
+
 		LOG.info("Time for ping request is " + timeDiff);
 		if (isHealthy)
 			return Response.status(Status.OK).entity("Ping request is shows that the application is healthy").build();
@@ -253,4 +258,31 @@ public class HealthController {
 		return Response.status(Status.OK).entity(response).build();
 
 	}
+
+	@Operation(summary = "Check application from SDK", description = "Provided appplication values from SDK", method = "GET", operationId = "#2_10")
+	@ApiResponse(responseCode = "200", description = "values from SDK an JSON")
+	@Path("check-from-sdk")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response checkFromSDK() {
+		metricRegistry.mark();
+
+		PluginWorkspace pluginWorkspace = PluginWorkspaceProvider.getPluginWorkspace();
+
+		Map<String, String> mapSettings = new HashMap<>() {
+
+			private static final long serialVersionUID = 1L;
+
+			{
+				put("application name", pluginWorkspace.getApplicationName());
+				put("preferences directory", pluginWorkspace.getPreferencesDirectory());
+				put("user interface language", pluginWorkspace.getUserInterfaceLanguage());
+				put("version build", pluginWorkspace.getVersionBuildID());
+				put("version", pluginWorkspace.getVersion());
+			}
+		};
+
+		return Response.status(Status.OK).entity(mapSettings).build();
+	}
+
 }

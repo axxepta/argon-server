@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.w3c.dom.Document;
 
 @Contract
 public interface IDocumentDAO {
@@ -20,10 +21,12 @@ public interface IDocumentDAO {
 	
 	public boolean test(String resourceName);
 	
-	public byte [] readDocument(String documentName, String databaseName);
+	public byte [] readFileAsBinary(String fileName, String databaseName);
 	
-	public boolean uploadDocument(File file, String databaseName);
+	public Document readXMLDocument(String documentName, String databaseName);
 	
-	public boolean deleteDocument(String fileName, String databaseName);
+	public int uploadXMLDocument(File documentName, boolean withSchemaValidation, String databaseName);
+	
+	public int deleteDocument(String fileName, String databaseName);
 
 }

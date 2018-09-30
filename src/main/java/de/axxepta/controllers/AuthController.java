@@ -28,6 +28,7 @@ import com.codahale.metrics.Meter;
 import de.axxepta.tools.EncryptAES;
 import de.axxepta.tools.ValidationString;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import de.axxepta.exceptions.ResponseException;
@@ -43,14 +44,13 @@ public class AuthController {
 	private static final String KEY = "Argon Server KEY";
 
 	private EncryptAES encrypt;
-	
+
 	@Inject
 	@Named("UserAuthImplementation")
 	private IAuthUserService userService;
 
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
-	
-	
+
 	@PostConstruct
 	private void init()
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, UnsupportedEncodingException {
@@ -73,7 +73,7 @@ public class AuthController {
 		LOG.info("registry service ");
 
 		metricRegistry.mark();
-		
+
 		if (user == null) {
 			LOG.error("is not transmited json for user");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(), "is not transmited json for user");
@@ -122,9 +122,9 @@ public class AuthController {
 	public Response loginUser(final UserAuthModel user) throws ResponseException {
 
 		LOG.info("registry service ");
-		
+
 		metricRegistry.mark();
-		
+
 		if (user == null) {
 			LOG.error("is not transmited json for user");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(), "is not transmited json for user");
@@ -167,14 +167,15 @@ public class AuthController {
 			@ApiResponse(responseCode = "202", description = "no user logged") })
 	@Path("change-password")
 	@POST
-	public Response changePasswordUser(@QueryParam("password") final String password) {
+	public Response changePasswordUser(
+			@Parameter(description = "new password") @QueryParam("password") final String password) {
 		metricRegistry.mark();
-		
-		if(password == null || password.isEmpty())
+
+		if (password == null || password.isEmpty())
 			LOG.info("not password request");
 		else
 			LOG.info("new password " + password);
-		
+
 		String newPassword = userService.changePasswordActualLoginUser(password);
 		if (newPassword != null) {
 			return Response.status(Status.OK).entity("Password changed with " + newPassword).build();
@@ -182,7 +183,7 @@ public class AuthController {
 			return Response.status(Status.ACCEPTED).entity("No user logged").build();
 		}
 	}
-	
+
 	@Operation(summary = "Get username", description = "Get username uf user from actual session", method = "GET", operationId = "#5_4")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "get username of an existent user for the session"),
@@ -202,13 +203,14 @@ public class AuthController {
 	}
 
 	@Operation(summary = "Check if logged user have an role", description = "Check if that logged user have the role specified", method = "GET", operationId = "#5_5")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "user have or not searched role name"),
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "user have or not searched role name"),
 			@ApiResponse(responseCode = "400", description = "role name cannot be validated because is tranmissed incorectly"),
 			@ApiResponse(responseCode = "409", description = "no user is logged") })
 	@GET
 	@Path("check-role")
-	public Response hasRoleActualUser(@QueryParam("checked-role")final String role) throws ResponseException {
+	public Response hasRoleActualUser(
+			@Parameter(description = "name of checked role", required = true) @QueryParam("checked-role") final String role)
+			throws ResponseException {
 		if (!ValidationString.validationString(role, "role")) {
 			LOG.error("Value transmited for username is incorrect");
 			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -216,7 +218,7 @@ public class AuthController {
 		}
 		Boolean result = userService.hasRoleActualUser(role);
 		metricRegistry.mark();
-		if(result == null){
+		if (result == null) {
 			return Response.status(Status.CONFLICT).entity("No user is logged").build();
 		}
 		if (result) {
@@ -225,7 +227,7 @@ public class AuthController {
 			return Response.status(Status.OK).entity("Logged user not have " + role + " role").build();
 		}
 	}
-	
+
 	@Operation(summary = "Logout", description = "Logout user session", method = "POST", operationId = "#5_6")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "logout"),
 			@ApiResponse(responseCode = "202", description = "no user logged") })

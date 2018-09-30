@@ -36,13 +36,17 @@ public class SecurityFilter extends CsrfFilter {
 
 		List<String> restricted = new ArrayList<>();
 		restricted.add("127.0.0.1");
-		Map<String, List<String>> mapMethodsIPRestricted = new HashMap<>();
-		mapMethodsIPRestricted.put("POST", restricted);
-		mapMethodsIPRestricted.put("DELETE", restricted);
+		Map<String, List<String>> mapMethodsIPRestricted1 = new HashMap<>();
+		mapMethodsIPRestricted1.put("POST", restricted);
+		Map<String, List<String>> mapMethodsIPRestricted2 = new HashMap<>();
+		mapMethodsIPRestricted2.put("POST", restricted);
+		mapMethodsIPRestricted2.put("DELETE", restricted);
 
 		mapServicesAcceptedIP.put("auth-services", mapMethodsIPUnrestrained);
 		mapServicesAcceptedIP.put("document-services", mapMethodsIPUnrestrained);
-		mapServicesAcceptedIP.put("databases-services", mapMethodsIPRestricted);
+		mapServicesAcceptedIP.put("plugins", mapMethodsIPRestricted1);
+		mapServicesAcceptedIP.put("databases-services", mapMethodsIPRestricted2);
+		mapServicesAcceptedIP.put("application-directory-services", mapMethodsIPRestricted1);
 	}
 
 	@Override

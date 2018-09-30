@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -39,6 +40,9 @@ import org.jvnet.hk2.annotations.Service;
 import de.axxepta.dao.implementations.SessionCacheDAOImpl;
 import de.axxepta.services.interfaces.IAuthUserService;
 import ro.sync.auth.PropertiesRealmWithDefaultUsersFile;
+import ro.sync.ecss.extensions.api.webapp.license.UserInfo;
+import ro.sync.ecss.extensions.api.webapp.license.UserManager;
+import ro.sync.ecss.extensions.api.webapp.license.UserManagerSingleton;
 
 @Service(name = "UserAuthImplementation")
 @Singleton
@@ -191,6 +195,12 @@ public class AuthUserServiceImpl implements IAuthUserService {
 		return true;
 	}
 
+	@Override
+	public List <UserInfo> getLoggedUsersId() {
+		UserManager userManager = UserManagerSingleton.getInstance();
+		return userManager.getAllUsers();
+	}
+	
 	private String hashPassword(String password) {
 		SecureRandomNumberGenerator randGenerator = new SecureRandomNumberGenerator();
 		SimpleHash hash = new SimpleHash("SHA-256", password.toCharArray(), randGenerator.nextBytes(32));
@@ -205,4 +215,5 @@ public class AuthUserServiceImpl implements IAuthUserService {
 		return rand.ints(size, firstChar, lastChar + 1).mapToObj((ch) -> (char) ch)
 				.collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
 	}
+	
 }

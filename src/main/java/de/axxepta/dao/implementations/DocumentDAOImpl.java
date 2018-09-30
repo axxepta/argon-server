@@ -2,6 +2,7 @@ package de.axxepta.dao.implementations;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +25,10 @@ import org.basex.core.BaseXException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.jvnet.hk2.annotations.Service;
+import org.w3c.dom.Document;
 
 import de.axxepta.services.dao.interfaces.IDocumentDAO;
+import de.axxepta.tools.ValidationDocs;
 
 @Service(name = "BaseXDao")
 @Singleton
@@ -39,6 +42,7 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	private RunDirectCommands runCommands;
 
 	private String scheme;
+	private String hostName;
 	private int port;
 	private String baseURL;
 	private String username;
@@ -47,6 +51,7 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	@PostConstruct
 	public void initConnection() {
 		scheme = request.getScheme();
+		hostName = "localhost";
 		port = request.getLocalPort();
 		baseURL = "argon-server/argon-rest/rest";
 
@@ -129,20 +134,45 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public byte[] readDocument(String documentName, String database) {
+	public byte[] readFileAsBinary(String fileName, String databaseName) {
+		
+		
 		return null;
 	}
 
 	@Override
-	public boolean uploadDocument(File file, String databaseName) {
+	public Document readXMLDocument(String documentName, String databaseName) {
+		return null;
+	}
+
+	@Override
+	public int uploadXMLDocument(File file, boolean withSchemaValidation, String databaseName) {
 		if (file == null || !file.exists() || !file.isFile()) {
 			LOG.info("file not exists or is a directory");
-			return false;
+			return 500;
 		}
 
-		if (!runCommands.existDatabase(databaseName)) {
+		if (withSchemaValidation) {
+			if (ValidationDocs.validateXMLSchema.isDocTypeValid(file)) {
+				LOG.error(file.getName() + " is not an XML document valid");
+				return 500;
+			}
+		} else {
+			if (ValidationDocs.validateXMLWithDOM.isDocTypeValid(file)) {
+				LOG.error(file.getName() + " is not an XML document valid");
+				return 500;
+			}
+		}
+
+		String databasePath = null;
+		if (showDatabases().containsKey(databaseName)) {
+			Map<String, String> propertiesDatabaseMap = showDatabases().get(databaseName);
+			String databasePathName = propertiesDatabaseMap.get("inputpath");
+			databasePath = databasePathName.substring(0, databasePathName.lastIndexOf(File.separator));
+			LOG.info("For database " + databaseName + " path is " + databasePath);
+		} else {
 			LOG.info("database with name " + databaseName + " not exists");
-			return false;
+			return 404;
 		}
 
 		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
@@ -152,15 +182,30 @@ public class DocumentDAOImpl implements IDocumentDAO {
 		clientConfig.register(feature);
 		Client client = ClientBuilder.newClient(clientConfig);
 		String databaseRESTfulURL = composeURL(databaseName);
+		String nameFilePath = file.getName();
+		String fileName = nameFilePath.substring(nameFilePath.lastIndexOf(File.separator) + 1, nameFilePath.length());
+		File to = new File(databasePath + File.separator + fileName);
+		try {
+			Files.copy(file.toPath(), to.toPath());
+		} catch (IOException e) {
+			LOG.error("IOException " + e.getMessage());
+			return 500;
+		}
 
-		// Files.move(file, to);
+		WebTarget webTarget = client.target(databaseRESTfulURL + '/' + fileName);
+
+		Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN_TYPE);
+		Response response = invocationBuilder.get();
+		int code = response.getStatus();
+		LOG.info("Response is " + code);
 		client.close();
-		return false;
+		
+		return code;
 	}
 
 	@Override
-	public boolean deleteDocument(String fileName, String databaseName) {
-		return false;
+	public int deleteDocument(String fileName, String databaseName) {
+		return 0;
 
 	}
 
@@ -207,7 +252,7 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	private String composeURL(String resourceDatabase) {
-		return scheme + "://localhost" + ':' + port + '/' + baseURL + '/' + resourceDatabase;
+		return scheme + "://" + hostName + ':' + port + '/' + baseURL + '/' + resourceDatabase;
 	}
 
 	@PreDestroy

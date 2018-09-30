@@ -25,6 +25,7 @@ import de.axxepta.listeners.RegisterMetricsListener;
 import de.axxepta.services.dao.interfaces.IDocumentDAO;
 import de.axxepta.tools.ValidationString;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -60,7 +61,9 @@ public class DatabasesResourcesController {
 	@GET
 	@Path("show-infos-database")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response showInfosDatabase(@QueryParam("database-name") String databaseName) throws ResponseException {
+	public Response showInfosDatabase(
+			@Parameter(description = "name of the database", required = true) @QueryParam("database-name") String databaseName)
+			throws ResponseException {
 		metricRegistry.mark();
 		if (!ValidationString.validationString(databaseName, "databaseName")) {
 			LOG.error("Value transmited for database name is incorrect");
@@ -84,15 +87,17 @@ public class DatabasesResourcesController {
 
 	@Operation(summary = "Create database", description = "Create a database to which an initial file may be added", method = "POST", operationId = "#7_3")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "create database with success"),
-			@ApiResponse(responseCode = "400", description = "name of database is incorrect"), 
+			@ApiResponse(responseCode = "400", description = "name of database is incorrect"),
 			@ApiResponse(responseCode = "409", description = "database with that name already exists"),
-			@ApiResponse(responseCode = "500", description = "internal server error")})
+			@ApiResponse(responseCode = "500", description = "internal server error") })
 	@POST
 	@Path("create-database")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response createDatabase(@FormParam("database-name") String databaseName,
-			@FormParam("file-url") String fileURL) throws ResponseException {
+	public Response createDatabase(
+			@Parameter(description = "database name", required = true) @FormParam("database-name") String databaseName,
+			@Parameter(description = "file url that will be added to database") @FormParam("file-url") String fileURL)
+			throws ResponseException {
 		metricRegistry.mark();
 		if (!ValidationString.validationString(databaseName, "databaseName")) {
 			LOG.error("Value transmited for database name is incorrect");
@@ -115,14 +120,16 @@ public class DatabasesResourcesController {
 	}
 
 	@Operation(summary = "Delete database", description = "Drop a database", method = "DELETE", operationId = "#7_4")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "delete database with success"),			
-			@ApiResponse(responseCode = "400", description = "name of database is incorrect"), 
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "delete database with success"),
+			@ApiResponse(responseCode = "400", description = "name of database is incorrect"),
 			@ApiResponse(responseCode = "409", description = "innexistent database"),
-			@ApiResponse(responseCode = "500", description = "internal server error")})
+			@ApiResponse(responseCode = "500", description = "internal server error") })
 	@DELETE
 	@Path("delete-database")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response dropDatabase(@QueryParam("database-name") String databaseName) throws ResponseException {
+	public Response dropDatabase(
+			@Parameter(description = "database name",  required = true) String databaseName)
+			throws ResponseException {
 		metricRegistry.mark();
 		if (!ValidationString.validationString(databaseName, "databaseName")) {
 			LOG.error("Value transmited for database name is incorrect");
@@ -132,7 +139,7 @@ public class DatabasesResourcesController {
 		LOG.info("delete database " + databaseName);
 
 		Boolean result = documentDAO.dropDatabase(databaseName);
-		if(result == null) {
+		if (result == null) {
 			return Response.status(Status.CONFLICT).entity("Database with name  " + databaseName + " not exists")
 					.build();
 		}
