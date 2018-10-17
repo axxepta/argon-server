@@ -1,12 +1,17 @@
 package de.axxepta.filters;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,36 +22,45 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import de.axxepta.configurator.ResourceBundleReader;
 import ro.sync.auth.CsrfFilter;
 
-@WebFilter(filterName = "FilterRestEASY", urlPatterns = { "/*" })
+@Singleton
+@WebFilter(filterName = "FilterJersey", urlPatterns = { "/*" })
 public class SecurityFilter extends CsrfFilter {
 
 	private static final Logger LOG = Logger.getLogger(SecurityFilter.class);
 
-	private Map<String, Map<String, List<String>>> mapServicesAcceptedIP;
+	private Map<String, List<String>> mapServicesAcceptedIP;
 
 	@PostConstruct
 	public void loadRules() {
+
 		LOG.info("load rules for security filter");
+
 		mapServicesAcceptedIP = new HashMap<>();
 
-		Map<String, List<String>> mapMethodsIPUnrestrained = new HashMap<>();
-		mapMethodsIPUnrestrained.put("POST", null);
+		final String fileName = "ArgonServerConfig";
+		final File fileConfig = new File(fileName);
+		final Locale locale = new Locale("en");
 
-		List<String> restricted = new ArrayList<>();
-		restricted.add("127.0.0.1");
-		Map<String, List<String>> mapMethodsIPRestricted1 = new HashMap<>();
-		mapMethodsIPRestricted1.put("POST", restricted);
-		Map<String, List<String>> mapMethodsIPRestricted2 = new HashMap<>();
-		mapMethodsIPRestricted2.put("POST", restricted);
-		mapMethodsIPRestricted2.put("DELETE", restricted);
+		ResourceBundleReader bundleReader = new ResourceBundleReader(fileConfig, locale);
 
-		mapServicesAcceptedIP.put("auth-services", mapMethodsIPUnrestrained);
-		mapServicesAcceptedIP.put("document-services", mapMethodsIPUnrestrained);
-		mapServicesAcceptedIP.put("plugins", mapMethodsIPRestricted1);
-		mapServicesAcceptedIP.put("databases-services", mapMethodsIPRestricted2);
-		mapServicesAcceptedIP.put("application-directory-services", mapMethodsIPRestricted1);
+		for (String key : bundleReader.getKeys()) {
+			if (key.contains("service")) {
+				String propertyValue = (String) bundleReader.getValueAsString(key);
+				if (!propertyValue.isEmpty()) {
+					String[] values = ((String) propertyValue).split(",");
+					List<String> valuesList = Arrays.stream(values).collect(Collectors.toList());
+					mapServicesAcceptedIP.put(key, valuesList);
+				} else {
+					mapServicesAcceptedIP.put(key, new ArrayList<>());
+				}
+			}
+		}
+
+		LOG.info("Number of rules loaded " + mapServicesAcceptedIP.size());
+
 	}
 
 	@Override
@@ -58,34 +72,22 @@ public class SecurityFilter extends CsrfFilter {
 		LOG.info("Path request " + pathInfo + " from IP " + ip);
 
 		if (pathInfo != null) {
-			for (Map.Entry<String, Map<String, List<String>>> entry : mapServicesAcceptedIP.entrySet()) {
-				String nameService = entry.getKey();
-				Map<String, List<String>> mapMethodsIpRestrictions = entry.getValue();
-
-				if (pathInfo.contains(nameService)) {
-					for (Map.Entry<String, List<String>> entryMethodsRestrictions : mapMethodsIpRestrictions.entrySet()) {
-						String method = entryMethodsRestrictions.getKey();
-						if(((HttpServletRequest) request).getMethod().equalsIgnoreCase(method)) {
-							List<String> restrictedIPList = entryMethodsRestrictions.getValue();
-							if (restrictedIPList == null) {
-								String generateRedirectUrl = "/services" + pathInfo;
-
-								RequestDispatcher dispatcher = request.getRequestDispatcher(generateRedirectUrl);
+			for (Map.Entry<String, List<String>> entry : mapServicesAcceptedIP.entrySet()) {
+				String pathNameService = entry.getKey().trim();
+				if (pathInfo.contains(pathNameService)) {
+					List<String> restrictedIPList = entry.getValue();
+					if (restrictedIPList.isEmpty()) {
+						RequestDispatcher dispatcher = request.getRequestDispatcher("/services" + pathInfo);
+						dispatcher.forward(request, response);
+						return;
+					} else {
+						for (String ipElem : restrictedIPList) {
+							if (ip.equals(ipElem)) {
+								RequestDispatcher dispatcher = request.getRequestDispatcher("/services" + pathInfo);
 								dispatcher.forward(request, response);
 								return;
-							} else {
-								for (String ipElem : restrictedIPList) {
-									if (ip.equals(ipElem)) {
-
-										String generateRedirectUrl = "/services" + pathInfo;
-
-										RequestDispatcher dispatcher = request.getRequestDispatcher(generateRedirectUrl);
-										dispatcher.forward(request, response);
-										return;
-									}
-								}
 							}
-						}					
+						}
 					}
 				}
 			}

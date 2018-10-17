@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import ro.sync.servlet.admin.RESTAdminLicense;
 
-@Path("license")
+@Path("license-services")
 public class LicenseController {
 
 	private static final Logger LOG = Logger.getLogger(LicenseController.class);

@@ -15,12 +15,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ResourceContext;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
 import org.glassfish.jersey.server.monitoring.ResourceStatistics;
@@ -56,6 +59,9 @@ public class HealthController {
 	@Context
 	private ResourceContext resourceContext;
 
+	@Context
+	private Application application;
+
 	@Inject
 	@Named("DatabaseBaseXServiceImplementation")
 	private IDatabaseResourceService documentsResourceService;
@@ -73,6 +79,7 @@ public class HealthController {
 		metricRegistry.mark();
 		HealthCheckImpl health = new HealthCheckImpl();
 		Result result = null;
+
 		try {
 			result = health.check();
 			if (result.isHealthy()) {
@@ -242,7 +249,9 @@ public class HealthController {
 	@Path("check-database")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response checkDatabase(@QueryParam("resource") String resourceName) throws ResponseException {
+	public Response checkDatabase(
+			@Parameter(description = "query parameter for name of resource", required = true) @QueryParam("resource") String resourceName)
+			throws ResponseException {
 		metricRegistry.mark();
 		if (!ValidationString.validationString(resourceName, "resourceName")) {
 			LOG.error("Value transmited for name of resource is incorrect");
@@ -283,6 +292,46 @@ public class HealthController {
 		};
 
 		return Response.status(Status.OK).entity(mapSettings).build();
+	}
+
+	@Operation(summary = "Check property", description = "Return value of a property if exists", method = "GET", operationId = "#2_10")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "return value of property"),
+			@ApiResponse(responseCode = "204", description = "return value of property"),
+			@ApiResponse(responseCode = "400", description = "error in transmited name of property"),
+			@ApiResponse(responseCode = "409", description = "conflict in resource load") })
+
+	@Path("check-configuration-property")
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response checkConfigurationProperty(
+			@Parameter(description = "query parameter for name of property", required = true) @QueryParam("property") String propertyName)
+			throws ResponseException {
+		metricRegistry.mark();
+		if (!ValidationString.validationString(propertyName, "property name")) {
+			LOG.error("Value transmited for property is incorrect");
+			throw new ResponseException(Response.Status.BAD_REQUEST.getStatusCode(),
+					"Value transmited for property is incorrect");
+		}
+
+		ResourceConfig resourceConfiguration = ResourceConfig.forApplication(application);
+		
+		if (resourceConfiguration == null) {
+			LOG.error("Context injection for ResourceConfig has not been achieved");
+			return Response.status(Status.CONFLICT).entity("Internal error related on load resource configuration")
+					.build();
+		}
+
+		String valueProperty = (String) resourceConfiguration.getProperty(propertyName);
+
+		if (valueProperty == null) {
+			return Response.status(Status.NO_CONTENT).entity("Property name not found").build();
+		} else {
+			if (valueProperty.isEmpty())
+				return Response.status(Status.OK).entity("Property has no assigned value").build();
+			else
+				return Response.status(Status.OK).entity("Property has value " + valueProperty).build();
+
+		}
 	}
 
 }

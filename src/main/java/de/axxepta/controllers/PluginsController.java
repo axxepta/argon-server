@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-@Path("plugins")
+@Path("plugin-services")
 public class PluginsController {
 
 	private static final Logger LOG = Logger.getLogger(PluginsController.class);

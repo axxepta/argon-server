@@ -1,39 +1,45 @@
 package de.axxepta.configurator;
 
-
 import java.io.IOException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.ext.Provider;
+
+import org.apache.log4j.Logger;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.Populator;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.utilities.DuplicatePostProcessor;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.InjectionManagerProvider;
+import org.glassfish.jersey.internal.inject.InjectionManager;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import org.glassfish.jersey.server.ResourceConfig;
 
+@Provider
 public class DiscoverableFeature implements Feature {
 
-	private final ServiceLocator scopedLocator;
-
-	@Inject
-    private DiscoverableFeature(ServiceLocator scopedLocator) {
-        this.scopedLocator = scopedLocator;
-    }
+	private static final Logger LOG = Logger.getLogger(DiscoverableFeature.class);
     
     @Override
-    public boolean configure(FeatureContext context) {     
-        DynamicConfigurationService dcs = scopedLocator.getService(DynamicConfigurationService.class);
+    public boolean configure(FeatureContext context) { 
+    	LOG.info("Config discovery feature");
+    	InjectionManager injectionManager = InjectionManagerProvider.getInjectionManager(context);
+    	ServiceLocator locator = injectionManager.getInstance(ServiceLocator.class);
+    	DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
         Populator populator = dcs.getPopulator();
         try {
             populator.populate(new ClasspathDescriptorFileFinder(this.getClass().getClassLoader()),
                     new DuplicatePostProcessor());
         } catch (IOException | MultiException ex) {
-            Logger.getLogger(DiscoverableFeature.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error(ex.getMessage());
         }
+        
         return true;
     }
     

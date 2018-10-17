@@ -2,15 +2,20 @@ package de.axxepta.controllers;
 
 import java.time.LocalDateTime;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.server.ResourceConfig;
 
 import com.codahale.metrics.Meter;
 
@@ -20,15 +25,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Path("testing")
+@Singleton
 public class TestController {
 
 	private static final Logger LOG = Logger.getLogger(TestController.class);
 
 	private final Meter metricRegistry = RegisterMetricsListener.requests;
-
+	
 	@Context
 	private HttpServletRequest request;
-
+	
 	@Operation(summary = "Doing simple test", description = "Doing a test by returning a simple message", 
 			   method = "GET", operationId="#1_1")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "message test") })
@@ -40,7 +46,7 @@ public class TestController {
 
 		String token = request.getSession().getId();
 		LOG.info("Session id " + token);
-
+		
 		LOG.info("Do a simple test on argon server");
 		return Response.ok("Do a simple test on argon server").build();
 	}
@@ -56,5 +62,6 @@ public class TestController {
 		LocalDateTime dateTime = LocalDateTime.now();
 		LOG.info("Do a simple test on argon server on " + dateTime);
 		return Response.ok("Do a simple test on argon server on " + dateTime).build();
-	}
+	}	
+	
 }
