@@ -2,7 +2,6 @@ package de.axxepta.dao.implementations;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,11 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -26,6 +29,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import de.axxepta.services.dao.interfaces.IDocumentDAO;
 import de.axxepta.tools.ValidationDocs;
@@ -62,8 +66,8 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public void executeQuery(String resourceDatabase, String query) {
-		LOG.info("Set actual connection for " + resourceDatabase);
+	public void executeQuery(String databaseName, String query) {
+		LOG.info("Set actual connection for " + databaseName);
 	}
 
 	@Override
@@ -134,15 +138,44 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	}
 
 	@Override
-	public byte[] readFileAsBinary(String fileName, String databaseName) {
-		
-		
-		return null;
-	}
-
-	@Override
 	public Document readXMLDocument(String documentName, String databaseName) {
-		return null;
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    factory.setIgnoringComments(true);
+        factory.setIgnoringElementContentWhitespace(true);
+        factory.setValidating(false);
+	    DocumentBuilder docBuilder;
+		try {
+			docBuilder = factory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			LOG.error("Parser configuration exception " + e.getMessage());
+			return null;
+		}
+	    //Document doc = docBuilder.newDocument();
+		
+	    Client client = createClient(username, password);
+
+		String databaseRESTfulURL = composeURL(databaseName);
+		
+		WebTarget webTarget = client.target(databaseRESTfulURL + '/' + documentName);
+		Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_XML);
+		Response response = invocationBuilder.get();
+		int code = response.getStatus();
+		LOG.info("For upload XML file response is " + code);
+		
+		if(code == 200) {
+			File readFile = response.readEntity(File.class);
+			try {
+				Document doc = docBuilder.parse(readFile);
+				return doc;
+			} catch (SAXException | IOException e) {
+				LOG.error("Exception " + e.getMessage());
+				return null;
+			}
+		}
+		else {
+			LOG.error("response code for downloading " + documentName + " is " + code);
+			return null;
+		}
 	}
 
 	@Override
@@ -164,48 +197,58 @@ public class DocumentDAOImpl implements IDocumentDAO {
 			}
 		}
 
-		String databasePath = null;
-		if (showDatabases().containsKey(databaseName)) {
-			Map<String, String> propertiesDatabaseMap = showDatabases().get(databaseName);
-			String databasePathName = propertiesDatabaseMap.get("inputpath");
-			databasePath = databasePathName.substring(0, databasePathName.lastIndexOf(File.separator));
-			LOG.info("For database " + databaseName + " path is " + databasePath);
-		} else {
-			LOG.info("database with name " + databaseName + " not exists");
-			return 404;
-		}
+		String databasePath = composeDatabasePath(databaseName);
 
-		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
-				.credentials(username, password).build();
+		if (databasePath == null)
+			return 500;
 
-		ClientConfig clientConfig = new ClientConfig();
-		clientConfig.register(feature);
-		Client client = ClientBuilder.newClient(clientConfig);
+		Client client = createClient(username, password);
+
+		
 		String databaseRESTfulURL = composeURL(databaseName);
-		String nameFilePath = file.getName();
-		String fileName = nameFilePath.substring(nameFilePath.lastIndexOf(File.separator) + 1, nameFilePath.length());
+		/*String fileName = nameFilePath.substring(nameFilePath.lastIndexOf(File.separator) + 1, nameFilePath.length());
 		File to = new File(databasePath + File.separator + fileName);
 		try {
 			Files.copy(file.toPath(), to.toPath());
 		} catch (IOException e) {
 			LOG.error("IOException " + e.getMessage());
 			return 500;
-		}
+		}*/
 
-		WebTarget webTarget = client.target(databaseRESTfulURL + '/' + fileName);
+		WebTarget webTarget = client.target(databaseRESTfulURL);
 
 		Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN_TYPE);
-		Response response = invocationBuilder.get();
-		int code = response.getStatus();
-		LOG.info("Response is " + code);
-		client.close();
+		Response response = invocationBuilder.put(Entity.xml(file));
 		
+		int code = response.getStatus();
+		LOG.info("For upload XML file response is " + code);
+		client.close();
+
 		return code;
 	}
 
 	@Override
 	public int deleteDocument(String fileName, String databaseName) {
-		return 0;
+
+		String databasePath = composeDatabasePath(databaseName);
+
+		if (databasePath == null)
+			return 500;
+
+		Client client = createClient(username, password);
+
+		String databaseRESTfulURL = composeURL(databaseName);
+		
+		WebTarget webTarget = client.target(databaseRESTfulURL + '/' + fileName);
+
+		Invocation.Builder invocationBuilder = webTarget.request(MediaType.TEXT_PLAIN_TYPE);
+		Response response = invocationBuilder.delete();
+		int code = response.getStatus();
+		
+		LOG.info("For delete XML file response is " + code);
+		client.close();
+
+		return code;
 
 	}
 
@@ -258,6 +301,31 @@ public class DocumentDAOImpl implements IDocumentDAO {
 	@PreDestroy
 	public void closeConnections() {
 		runCommands.closeContext();
+	}
+
+	private String composeDatabasePath(String databaseName) {
+		String databasePath = null;
+		if (showDatabases().containsKey(databaseName)) {
+			Map<String, String> propertiesDatabaseMap = showDatabases().get(databaseName);
+			String databasePathName = propertiesDatabaseMap.get("inputpath");
+			databasePath = databasePathName.substring(0, databasePathName.lastIndexOf(File.separator));
+			LOG.info("For database " + databaseName + " path is " + databasePath);
+			return databasePath;
+		} else {
+			LOG.info("database with name " + databaseName + " not exists");
+			return null;
+		}
+	}
+
+	private Client createClient(String usermane, String password) {
+		LOG.info("Create a client for username " + username);
+		HttpAuthenticationFeature feature = HttpAuthenticationFeature.basicBuilder().nonPreemptive()
+				.credentials(username, password).build();
+
+		ClientConfig clientConfig = new ClientConfig();
+		clientConfig.register(feature);
+		Client client = ClientBuilder.newClient(clientConfig);
+		return client;
 	}
 
 }

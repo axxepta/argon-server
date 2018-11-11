@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 public class SerializeObjectUtil {
 
-	private static final Logger LOG = Logger.getLogger(SerializeObjectUtil .class);
+	private static final Logger LOG = Logger.getLogger(SerializeObjectUtil.class);
 	
 	public static byte[] serialize(Object obj, String key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		EncryptAES encrypt = new EncryptAES(key);

@@ -21,8 +21,6 @@ public interface IDocumentDAO {
 	
 	public boolean test(String resourceName);
 	
-	public byte [] readFileAsBinary(String fileName, String databaseName);
-	
 	public Document readXMLDocument(String documentName, String databaseName);
 	
 	public int uploadXMLDocument(File documentName, boolean withSchemaValidation, String databaseName);

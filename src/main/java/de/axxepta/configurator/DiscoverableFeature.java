@@ -1,9 +1,7 @@
 package de.axxepta.configurator;
 
 import java.io.IOException;
-import java.util.logging.Level;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
@@ -15,11 +13,8 @@ import org.glassfish.hk2.api.Populator;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.utilities.DuplicatePostProcessor;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.InjectionManagerProvider;
 import org.glassfish.jersey.internal.inject.InjectionManager;
-import org.glassfish.jersey.process.internal.RequestScoped;
-import org.glassfish.jersey.server.ResourceConfig;
 
 @Provider
 public class DiscoverableFeature implements Feature {
