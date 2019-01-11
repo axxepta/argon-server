@@ -4,18 +4,96 @@
     "http://www.eclipse.org/jetty/configure_9_3.dtd">
 
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
-	<Call name="addConnector">
-		<Arg>
-			<New id="httpConnector"
-				class="org.eclipse.jetty.server.ServerConnector">
-				<Arg name="server">
-					<Ref refid="Server" />
-				</Arg>
-				<Set name="host">0.0.0.0</Set>
-				<Set name="port">8801</Set>
-				<Set name="idleTimeout">60000</Set>
-				<Set name="reuseAddress">true</Set>
-			</New>
-		</Arg>
-	</Call>
+	<!-- <Call name="addConnector"> <Arg> <New id="httpConnector" class="org.eclipse.jetty.server.ServerConnector"> 
+		<Arg name="server"> <Ref refid="Server" /> </Arg> <Set name="host">0.0.0.0</Set> 
+		<Set name="port">8801</Set> <Set name="idleTimeout">60000</Set> <Set name="reuseAddress">true</Set> 
+		</New> </Arg> </Call> -->
+
+
+
+	<Set name="connectors">
+		<Array type="org.eclipse.jetty.server.Connector">
+			<Item>
+				<New class="org.eclipse.jetty.server.ServerConnector">
+					<Arg>
+						<Ref refid="Server" />
+					</Arg>
+					<Set name="port">8801</Set>
+					<Set name="name">instance_8801</Set>
+				</New>
+			</Item>
+			<Item>
+				<New class="org.eclipse.jetty.server.ServerConnector">
+					<Arg>
+						<Ref refid="Server" />
+					</Arg>
+					<Set name="port">8802</Set>
+					<Set name="name">instance_8802</Set>
+
+				</New>
+			</Item>
+		</Array>
+	</Set>
+
+	<New id="context-rest"
+		class="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+		<Set name="contextPath">/</Set>
+		<Set name="war">RestServicesModule/target/RestServicesModule.war</Set>
+		<Set name="virtualHosts">
+			<Array type="java.lang.String">
+				<Item>@instance_8801</Item>
+			</Array>
+		</Set>
+
+		<Call name="setAttribute">
+			<Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>
+			<Arg>^$</Arg>
+		</Call>
+
+		<Call name="setAttribute">
+			<Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
+			<Arg>^$</Arg>
+		</Call>
+	</New>
+
+	<New id="context-oxygen"
+		class="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+		<Set name="contextPath">/</Set>
+		<Set name="war">OxygenWebAuthorModule/target/OxygenWebAuthorModule.war
+		</Set>
+		<Set name="virtualHosts">
+			<Array type="java.lang.String">
+				<Item>@instance_8802</Item>
+			</Array>
+		</Set>
+
+		<Call name="setAttribute">
+			<Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>
+			<Arg>^$</Arg>
+		</Call>
+
+		<Call name="setAttribute">
+			<Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
+			<Arg>^$</Arg>
+		</Call>
+	</New>
+
+	<Set name="handler">
+		<New
+			class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
+			<Set name="handlers">
+				<Array type="org.eclipse.jetty.server.Handler">
+					<Item>
+						<Ref refid="context-rest" />
+					</Item>
+					<Item>
+						<Ref refid="context-oxygen" />
+					</Item>
+					<Item>
+						<New class="org.eclipse.jetty.server.handler.DefaultHandler" />
+					</Item>
+				</Array>
+			</Set>
+		</New>
+	</Set>
 </Configure>
