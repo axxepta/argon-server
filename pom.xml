@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>de.axxepta</groupId>
+		<artifactId>argon-server</artifactId>
+		<version>0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>OxygenWebAuthorModule</artifactId>
+
+	<repositories>
+		<repository>
+			<id>oxygenxml</id>
+			<name>oXygen public artifacts</name>
+			<url>http://www.oxygenxml.com/maven</url>
+		</repository>
+	</repositories>
+
+	<name>OxygenWebAuthorModule Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+	<packaging>war</packaging>
+
+	<properties>
+		<oxygen.sdk.version>20.1.0.3</oxygen.sdk.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.axxepta</groupId>
+			<artifactId>RestServicesModule</artifactId>
+			<version>0.1-SNAPSHOT</version>
+			<classifier>classes</classifier>
+
+			<exclusions>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>oxygen-webapp</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+    				<artifactId>oxygen-sdk</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>frameworks</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oxygenxml</groupId>
+			<artifactId>oxygen-webapp</artifactId>
+			<version>${oxygen.sdk.version}</version>
+			<type>war</type>
+			<exclusions>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>frameworks</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oxygenxml</groupId>
+			<artifactId>oxygen-webapp</artifactId>
+			<version>${oxygen.sdk.version}</version>
+			<classifier>classes</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>com.oxygenxml</groupId>
+					<artifactId>frameworks</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-ehcache</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+
+		<finalName>OxygenWebAuthorModule</finalName>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.2.2</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
+					<overlays>
+						<!-- Add the contents of the oxygen-webapp. -->
+						<overlay>
+							<groupId>com.oxygenxml</groupId>
+							<artifactId>oxygen-webapp</artifactId>
+
+							<excludes>
+								<exclude>WEB-INF/classes/ro/sync</exclude>
+								<exclude>WEB-INF/frameworks.zip</exclude>
+								<exclude>WEB-INF/options.zip</exclude>
+								<exclude>WEB-INF/plugins.zip</exclude>
+								<exclude>WEB-INF/lib/</exclude>
+
+								<packagingExcludes>
+									WEB-INF/lib/commons-logging-*.jar,
+									%regex[WEB-INF/lib/log4j-(?!over-slf4j).*.jar],
+
+								</packagingExcludes>
+							</excludes>
+						</overlay>
+					</overlays>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
