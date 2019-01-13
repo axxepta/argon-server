@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<transform_JSON>
+<property_2>10</property_2>
+<array>first</array>
+<array>second</array>
+<array>third</array>
+<property_1>value1</property_1>
+<numerical_array>1</numerical_array>
+<numerical_array>2</numerical_array>
+<numerical_array>3</numerical_array>
+<numerical_array>4</numerical_array>
+<numerical_array>5</numerical_array>
+<numerical_array>6</numerical_array>
+<numerical_array>7</numerical_array>
+<numerical_array>8</numerical_array>
+<numerical_array>9</numerical_array>
+<numerical_array>10</numerical_array>
+</transform_JSON>

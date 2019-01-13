@@ -1,0 +1,21 @@
+{
+    "SampleDocument": {
+        "title": "New title",
+		"FirstDiv": {
+            "title": "A",
+            "Content":"Long content",
+			"List": {
+                "GlossEntry": {
+                    "Element": "Some value",
+					"Description": "description for it",
+					"Sample": "Simple description for a simple text",
+					"URL": "http:///www.simple.com",
+					"GlossDef": {
+                        "Sample_Content": "Blob",
+						"array_terms": ["AB", "Cd"]
+                    }
+                }
+            }
+        }
+    }
+}

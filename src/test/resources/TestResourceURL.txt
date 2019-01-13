@@ -1,0 +1,10 @@
+http://www.resources.com
+https://www.sample.com
+ftp://test.de#fragment
+https://mvnrepository.com/artifact/io.dropwizard/abcde
+ftp://test.de:2211
+http://domain.com:8080
+http://www.resources.org
+#telnet://192.0.2.16:80/
+#http://a/b;p?q
+https://www.test.com:101/search?q=schema
